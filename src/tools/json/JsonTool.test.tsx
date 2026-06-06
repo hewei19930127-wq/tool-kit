@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { setStorageBackend, type KV } from "@/core/services/storage";
+import { useAppStore } from "@/core/store";
 import JsonTool from "./JsonTool";
 
 function memoryBackend(): KV {
@@ -16,7 +17,10 @@ function memoryBackend(): KV {
 }
 
 describe("JsonTool", () => {
-  beforeEach(() => setStorageBackend(memoryBackend()));
+  beforeEach(() => {
+    setStorageBackend(memoryBackend());
+    useAppStore.setState({ toolInputs: {} });
+  });
 
   it("formats input on Format", () => {
     render(<JsonTool />);

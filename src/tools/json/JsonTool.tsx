@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { CopyButton } from "@/components/CopyButton";
+import { HistoryButton } from "@/components/HistoryButton";
+import { OutputPane } from "@/components/OutputPane";
 import { useHistory } from "@/core/hooks/useHistory";
+import { useToolInput } from "@/core/hooks/useToolInput";
 import type { ToolResult } from "@/core/types";
 import {
   escapeJson,
@@ -22,18 +26,9 @@ const ACTIONS: { label: string; run: Action }[] = [
 ];
 
 export default function JsonTool() {
-  const [input, setInput] = useState("");
+  const [input, setInput] = useToolInput("json");
   const [result, setResult] = useState<ToolResult | null>(null);
-  const { record } = useHistory("json");
-
-  useEffect(() => {
-    const onFill = (event: Event) => {
-      const text = (event as CustomEvent<string>).detail;
-      if (typeof text === "string") setInput(text);
-    };
-    window.addEventListener("toolkit:fill-active-input", onFill);
-    return () => window.removeEventListener("toolkit:fill-active-input", onFill);
-  }, []);
+  const { entries, record } = useHistory("json");
 
   function apply(run: Action) {
     const next = run(input);
@@ -43,7 +38,7 @@ export default function JsonTool() {
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {ACTIONS.map((action) => (
           <button
             key={action.label}
@@ -54,6 +49,10 @@ export default function JsonTool() {
             {action.label}
           </button>
         ))}
+        <div className="ml-auto flex items-center gap-2">
+          <HistoryButton entries={entries} onRestore={setInput} />
+          <CopyButton text={result?.ok ? result.value : ""} />
+        </div>
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2">
@@ -64,32 +63,10 @@ export default function JsonTool() {
           placeholder='Paste JSON here, e.g. {"hello": "world"}'
           className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
-        <div className="h-full min-h-64 overflow-auto rounded-md border border-border bg-muted p-3">
-          {result?.ok && (
-            <pre
-              aria-label="Output"
-              className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
-            >
-              {result.value}
-            </pre>
-          )}
-          {result && !result.ok && (
-            <div role="alert" className="font-mono text-sm text-error">
-              {result.error}
-              {result.line != null && (
-                <span>
-                  {" "}
-                  (line {result.line}, col {result.col})
-                </span>
-              )}
-            </div>
-          )}
-          {!result && (
-            <p className="text-sm text-muted-foreground">
-              Output appears here. Paste JSON and pick an action.
-            </p>
-          )}
-        </div>
+        <OutputPane
+          result={result}
+          emptyHint="Output appears here. Paste JSON and pick an action."
+        />
       </div>
     </div>
   );

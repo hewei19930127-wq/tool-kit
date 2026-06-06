@@ -7,6 +7,7 @@ describe("app store", () => {
       activeToolId: null,
       favorites: [],
       theme: "system",
+      toolInputs: {},
     });
   });
 
@@ -27,5 +28,17 @@ describe("app store", () => {
     useAppStore.getState().hydrate({ favorites: ["base64"], theme: "dark" });
     expect(useAppStore.getState().favorites).toEqual(["base64"]);
     expect(useAppStore.getState().theme).toBe("dark");
+  });
+
+  it("sets and overwrites a tool's input independently", () => {
+    const { setToolInput } = useAppStore.getState();
+    setToolInput("json", "{}");
+    setToolInput("base64", "aGk=");
+    expect(useAppStore.getState().toolInputs).toEqual({
+      json: "{}",
+      base64: "aGk=",
+    });
+    setToolInput("json", "[]");
+    expect(useAppStore.getState().toolInputs.json).toBe("[]");
   });
 });

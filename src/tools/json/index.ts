@@ -1,16 +1,43 @@
 import { Braces } from "lucide-react";
 import type { Tool } from "@/core/types";
 import JsonTool from "./JsonTool";
-import { formatJson } from "./json";
+import { escapeJson, formatJson, unescapeJson } from "./json";
 
 export const jsonTool: Tool = {
   id: "json",
   name: "JSON",
   category: "encode-text",
   icon: Braces,
-  keywords: ["json", "format", "pretty", "minify", "validate", "格式化"],
+  keywords: [
+    "json",
+    "format",
+    "pretty",
+    "minify",
+    "validate",
+    "escape",
+    "格式化",
+  ],
   component: JsonTool,
   detectClipboard(text: string) {
-    return formatJson(text).ok;
+    const trimmed = text.trim();
+    return /^[{\[]/.test(trimmed) && formatJson(trimmed).ok;
   },
+  commands: [
+    {
+      id: "escape",
+      title: "Escape to JSON string",
+      run: (ctx) => {
+        const result = escapeJson(ctx.input);
+        if (result.ok) ctx.setInput(result.value);
+      },
+    },
+    {
+      id: "unescape",
+      title: "Unescape JSON string",
+      run: (ctx) => {
+        const result = unescapeJson(ctx.input);
+        if (result.ok) ctx.setInput(result.value);
+      },
+    },
+  ],
 };

@@ -5,13 +5,22 @@ import { DetailHost } from "@/app/DetailHost";
 import { Sidebar } from "@/app/Sidebar";
 import { ThemeProvider } from "@/app/ThemeProvider";
 import { useClipboardDetect } from "@/core/hooks/useClipboardDetect";
+import { getTool } from "@/core/registry";
 import { storage } from "@/core/services/storage";
 import { useAppStore, type ThemeMode } from "@/core/store";
 
 function App() {
   const hydrate = useAppStore((state) => state.hydrate);
+  const activeToolId = useAppStore((state) => state.activeToolId);
+  const setActiveTool = useAppStore((state) => state.setActiveTool);
+  const setToolInput = useAppStore((state) => state.setToolInput);
   const [ready, setReady] = useState(false);
-  const { text: clipText, clear: clearClip } = useClipboardDetect();
+  const {
+    text: clipText,
+    suggestedToolId,
+    clear: clearClip,
+  } = useClipboardDetect();
+  const suggestionName = getTool(suggestedToolId)?.name;
 
   useEffect(() => {
     Promise.all([
@@ -34,13 +43,6 @@ function App() {
     return unsubscribe;
   }, []);
 
-  const fillActiveInput = (text: string) => {
-    window.dispatchEvent(
-      new CustomEvent("toolkit:fill-active-input", { detail: text }),
-    );
-    clearClip();
-  };
-
   if (!ready) return null;
 
   return (
@@ -51,7 +53,18 @@ function App() {
           {clipText && (
             <ClipboardBanner
               text={clipText}
-              onFill={fillActiveInput}
+              suggestionName={suggestionName}
+              onFill={(text) => {
+                if (activeToolId) setToolInput(activeToolId, text);
+                clearClip();
+              }}
+              onOpenSuggestion={() => {
+                if (suggestedToolId) {
+                  setActiveTool(suggestedToolId);
+                  setToolInput(suggestedToolId, clipText);
+                }
+                clearClip();
+              }}
               onDismiss={clearClip}
             />
           )}

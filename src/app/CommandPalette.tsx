@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/command";
 import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
+import type { Tool, ToolCommand } from "@/core/types";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -34,6 +35,16 @@ export function CommandPalette() {
 
   const choose = (toolId: string) => {
     setActiveTool(toolId);
+    setOpen(false);
+  };
+
+  const runCommand = (tool: Tool, command: ToolCommand) => {
+    setActiveTool(tool.id);
+    const store = useAppStore.getState();
+    command.run({
+      input: store.toolInputs[tool.id] ?? "",
+      setInput: (text: string) => store.setToolInput(tool.id, text),
+    });
     setOpen(false);
   };
 
@@ -63,7 +74,7 @@ export function CommandPalette() {
               <CommandItem
                 key={`${tool.id}:${command.id}`}
                 value={`${tool.name} ${command.title}`}
-                onSelect={() => choose(tool.id)}
+                onSelect={() => runCommand(tool, command)}
               >
                 {tool.name}: {command.title}
               </CommandItem>
