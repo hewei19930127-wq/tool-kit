@@ -12,6 +12,12 @@ describe("registry", () => {
     }
   });
 
+  it("contains all Phase-2 tools", () => {
+    for (const id of ["xml", "radix", "cron", "regex", "color"]) {
+      expect(getTool(id)).toBeDefined();
+    }
+  });
+
   it("lets epoch-like clipboard content resolve to Time, not JSON or Base64", () => {
     expect(getTool("json")?.detectClipboard?.("1700000000")).toBe(false);
     expect(getTool("base64")?.detectClipboard?.("1700000000")).toBe(false);

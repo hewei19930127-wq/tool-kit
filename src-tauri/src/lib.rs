@@ -5,6 +5,8 @@ use tauri::{
 };
 use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
 
+mod eyedropper;
+
 fn toggle_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         if window.is_visible().unwrap_or(false) {
@@ -22,6 +24,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![eyedropper::pick_color])
         .setup(|app| {
             #[cfg(desktop)]
             {
