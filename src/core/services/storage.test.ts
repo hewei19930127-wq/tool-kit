@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { setStorageBackend, storage, type KV } from "./storage";
+import { type KV, setStorageBackend, storage } from "./storage";
 
 function memoryBackend(): KV {
   const map = new Map<string, unknown>();
@@ -22,9 +22,6 @@ describe("storage KV", () => {
 
   it("round-trips a value", async () => {
     await storage().set("favorites", ["json", "base64"]);
-    expect(await storage().get<string[]>("favorites")).toEqual([
-      "json",
-      "base64",
-    ]);
+    expect(await storage().get<string[]>("favorites")).toEqual(["json", "base64"]);
   });
 });

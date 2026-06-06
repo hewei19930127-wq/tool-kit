@@ -4,11 +4,7 @@ export interface HistoryEntry {
   ts: number;
 }
 
-export function pushHistory(
-  list: HistoryEntry[],
-  entry: HistoryEntry,
-  cap = 20,
-): HistoryEntry[] {
+export function pushHistory(list: HistoryEntry[], entry: HistoryEntry, cap = 20): HistoryEntry[] {
   const deduped = list.filter((item) => item.input !== entry.input);
   return [entry, ...deduped].slice(0, cap);
 }

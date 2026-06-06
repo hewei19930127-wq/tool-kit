@@ -42,11 +42,7 @@ export function toEpochMillis(input: string): ToolResult {
   return date ? { ok: true, value: String(date.valueOf()) } : ERR;
 }
 
-export function formatCustom(
-  input: string,
-  pattern: string,
-  tz?: string,
-): ToolResult {
+export function formatCustom(input: string, pattern: string, tz?: string): ToolResult {
   const date = parse(input);
   if (!date) return ERR;
   try {

@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { useAppStore } from "@/core/store";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

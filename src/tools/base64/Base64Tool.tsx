@@ -16,9 +16,7 @@ export default function Base64Tool() {
 
   const result = useMemo(() => {
     if (!input) return null;
-    return mode === "encode"
-      ? encodeBase64(input, urlSafe)
-      : decodeBase64(input, urlSafe);
+    return mode === "encode" ? encodeBase64(input, urlSafe) : decodeBase64(input, urlSafe);
   }, [input, mode, urlSafe]);
 
   return (
@@ -63,10 +61,7 @@ export default function Base64Tool() {
           placeholder={mode === "encode" ? "Text to encode..." : "Base64 to decode..."}
           className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
-        <OutputPane
-          result={result}
-          emptyHint="Type or paste on the left to convert."
-        />
+        <OutputPane result={result} emptyHint="Type or paste on the left to convert." />
       </div>
     </div>
   );

@@ -13,12 +13,7 @@ export const DEFAULT_THRESHOLDS: RouteThresholds = {
   rustAt: 1_000_000,
 };
 
-export const RUST_OPS = new Set([
-  "json.format",
-  "json.minify",
-  "xml.format",
-  "xml.minify",
-]);
+export const RUST_OPS = new Set(["json.format", "json.minify", "xml.format", "xml.minify"]);
 
 export function chooseRoute(
   length: number,
@@ -31,16 +26,8 @@ export function chooseRoute(
 
 export interface RouteDeps {
   chooseRoute: (length: number) => Route;
-  worker: (
-    op: string,
-    input: string,
-    opts?: TransformOpts,
-  ) => Promise<ToolResult>;
-  rust: (
-    op: string,
-    input: string,
-    opts?: TransformOpts,
-  ) => Promise<ToolResult>;
+  worker: (op: string, input: string, opts?: TransformOpts) => Promise<ToolResult>;
+  rust: (op: string, input: string, opts?: TransformOpts) => Promise<ToolResult>;
 }
 
 export async function runTransform(

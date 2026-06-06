@@ -1,7 +1,7 @@
 import { Binary } from "lucide-react";
 import type { Tool } from "@/core/types";
-import { decodeBase64 } from "./base64";
 import Base64Tool from "./Base64Tool";
+import { decodeBase64 } from "./base64";
 
 export const base64Tool: Tool = {
   id: "base64",

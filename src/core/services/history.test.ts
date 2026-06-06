@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pushHistory, type HistoryEntry } from "./history";
+import { type HistoryEntry, pushHistory } from "./history";
 
 const entry = (input: string, ts: number): HistoryEntry => ({
   input,

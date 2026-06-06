@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 import { ClipboardBanner } from "@/app/ClipboardBanner";
 import { CommandPalette } from "@/app/CommandPalette";
 import { DetailHost } from "@/app/DetailHost";
@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/app/ThemeProvider";
 import { useClipboardDetect } from "@/core/hooks/useClipboardDetect";
 import { getTool } from "@/core/registry";
 import { storage } from "@/core/services/storage";
-import { useAppStore, type ThemeMode } from "@/core/store";
+import { type ThemeMode, useAppStore } from "@/core/store";
 
 function App() {
   const hydrate = useAppStore((state) => state.hydrate);
@@ -18,11 +18,7 @@ function App() {
   const setToolInput = useAppStore((state) => state.setToolInput);
   const [ready, setReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const {
-    text: clipText,
-    suggestedToolId,
-    clear: clearClip,
-  } = useClipboardDetect();
+  const { text: clipText, suggestedToolId, clear: clearClip } = useClipboardDetect();
   const suggestionName = getTool(suggestedToolId)?.name;
 
   useEffect(() => {
@@ -89,11 +85,7 @@ function App() {
               onDismiss={clearClip}
             />
           )}
-          {settingsOpen ? (
-            <Settings onClose={() => setSettingsOpen(false)} />
-          ) : (
-            <DetailHost />
-          )}
+          {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : <DetailHost />}
         </div>
         <CommandPalette />
       </div>

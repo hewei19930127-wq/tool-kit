@@ -16,9 +16,7 @@ export interface AppState {
   setHotkey: (hotkey: string) => void;
   setToolInput: (id: string, text: string) => void;
   hydrate: (
-    slice: Partial<
-      Pick<AppState, "favorites" | "theme" | "activeToolId" | "hotkey">
-    >,
+    slice: Partial<Pick<AppState, "favorites" | "theme" | "activeToolId" | "hotkey">>,
   ) => void;
 }
 
@@ -37,7 +35,6 @@ export const useAppStore = create<AppState>((set) => ({
     })),
   setTheme: (theme) => set({ theme }),
   setHotkey: (hotkey) => set({ hotkey }),
-  setToolInput: (id, text) =>
-    set((state) => ({ toolInputs: { ...state.toolInputs, [id]: text } })),
+  setToolInput: (id, text) => set((state) => ({ toolInputs: { ...state.toolInputs, [id]: text } })),
   hydrate: (slice) => set(slice),
 }));

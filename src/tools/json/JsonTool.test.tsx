@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { setStorageBackend, type KV } from "@/core/services/storage";
+import { type KV, setStorageBackend } from "@/core/services/storage";
 import { useAppStore } from "@/core/store";
 import JsonTool from "./JsonTool";
 
@@ -27,9 +27,7 @@ describe("JsonTool", () => {
     const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: '{"b":1,"a":2}' } });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
-    expect((await screen.findByLabelText("Output")).textContent).toContain(
-      '"b": 1',
-    );
+    expect((await screen.findByLabelText("Output")).textContent).toContain('"b": 1');
   });
 
   it("shows an error state for invalid JSON", async () => {
@@ -55,9 +53,7 @@ describe("JsonTool", () => {
 
     fireEvent.change(input, { target: { value: 'he said "hi"\n' } });
     fireEvent.click(screen.getByRole("button", { name: "Escape" }));
-    expect(screen.getByLabelText("Output").textContent).toBe(
-      '"he said \\"hi\\"\\n"',
-    );
+    expect(screen.getByLabelText("Output").textContent).toBe('"he said \\"hi\\"\\n"');
 
     fireEvent.change(input, { target: { value: '"he said \\"hi\\"\\n"' } });
     fireEvent.click(screen.getByRole("button", { name: "Unescape" }));

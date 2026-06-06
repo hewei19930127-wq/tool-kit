@@ -26,9 +26,7 @@ describe("app store", () => {
   });
 
   it("hydrates persisted slices", () => {
-    useAppStore
-      .getState()
-      .hydrate({ favorites: ["base64"], theme: "dark" });
+    useAppStore.getState().hydrate({ favorites: ["base64"], theme: "dark" });
     expect(useAppStore.getState().favorites).toEqual(["base64"]);
     expect(useAppStore.getState().theme).toBe("dark");
   });

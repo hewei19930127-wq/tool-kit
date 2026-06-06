@@ -8,9 +8,7 @@ import { useTransform } from "@/core/hooks/useTransform";
 import type { ToolResult } from "@/core/types";
 import { validateXml } from "./xml";
 
-type Action =
-  | { label: string; op: string }
-  | { label: string; run: (input: string) => ToolResult };
+type Action = { label: string; op: string } | { label: string; run: (input: string) => ToolResult };
 
 const ACTIONS: Action[] = [
   { label: "Format", op: "xml.format" },
@@ -25,8 +23,7 @@ export default function XmlTool() {
   const { run, pending } = useTransform();
 
   async function apply(action: Action) {
-    const next =
-      "op" in action ? await run(action.op, input) : action.run(input);
+    const next = "op" in action ? await run(action.op, input) : action.run(input);
     setResult(next);
     if (next.ok) record(input, next.value);
   }
@@ -45,9 +42,7 @@ export default function XmlTool() {
             {action.label}
           </button>
         ))}
-        {pending && (
-          <span className="text-xs text-muted-foreground">Working...</span>
-        )}
+        {pending && <span className="text-xs text-muted-foreground">Working...</span>}
         <div className="ml-auto flex items-center gap-2">
           <HistoryButton entries={entries} onRestore={setInput} />
           <CopyButton text={result?.ok ? result.value : ""} />

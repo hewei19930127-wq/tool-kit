@@ -1,4 +1,4 @@
-import { diffChars, diffLines, diffWords, type Change } from "diff";
+import { type Change, diffChars, diffLines, diffWords } from "diff";
 
 export type DiffMode = "line" | "word" | "char";
 

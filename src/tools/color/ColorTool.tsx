@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
 import { Pipette } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
 import { contrastRatio, parseColor, wcagLevels } from "./color";
 import { pickColor } from "./eyedropper";
@@ -21,14 +21,8 @@ export default function ColorTool() {
   const [foreground, setForeground] = useState("#000000");
   const [background, setBackground] = useState("#ffffff");
 
-  const models = useMemo(
-    () => (input.trim() ? parseColor(input) : null),
-    [input],
-  );
-  const ratio = useMemo(
-    () => contrastRatio(foreground, background),
-    [background, foreground],
-  );
+  const models = useMemo(() => (input.trim() ? parseColor(input) : null), [input]);
+  const ratio = useMemo(() => contrastRatio(foreground, background), [background, foreground]);
   const swatch = models?.ok ? models.value.hex : "transparent";
   const levels = ratio.ok ? wcagLevels(ratio.value) : null;
 
@@ -56,6 +50,7 @@ export default function ColorTool() {
           Pick
         </button>
         <div
+          role="img"
           aria-label="Color swatch"
           className="h-8 w-8 rounded-md border border-border"
           style={{ background: swatch }}
@@ -70,13 +65,8 @@ export default function ColorTool() {
       {models?.ok && (
         <div className="flex flex-col">
           {(["hex", "rgb", "hsl", "hsv"] as const).map((key) => (
-            <div
-              key={key}
-              className="flex items-baseline gap-3 border-b border-border py-2"
-            >
-              <span className="w-16 shrink-0 text-xs uppercase text-muted-foreground">
-                {key}
-              </span>
+            <div key={key} className="flex items-baseline gap-3 border-b border-border py-2">
+              <span className="w-16 shrink-0 text-xs uppercase text-muted-foreground">{key}</span>
               <span aria-label={key} className="break-all font-mono text-sm">
                 {models.value[key]}
               </span>
@@ -86,9 +76,7 @@ export default function ColorTool() {
       )}
 
       <div className="rounded-md border border-border p-3">
-        <div className="mb-2 text-xs uppercase text-muted-foreground">
-          Contrast checker
-        </div>
+        <div className="mb-2 text-xs uppercase text-muted-foreground">Contrast checker</div>
         <div className="flex flex-wrap items-center gap-3">
           <input
             aria-label="Foreground"
@@ -102,10 +90,7 @@ export default function ColorTool() {
             onChange={(event) => setBackground(event.target.value)}
             className="w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
-          <div
-            className="rounded px-3 py-1"
-            style={{ color: foreground, background }}
-          >
+          <div className="rounded px-3 py-1" style={{ color: foreground, background }}>
             Aa
           </div>
           {ratio.ok && levels && (

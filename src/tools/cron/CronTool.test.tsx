@@ -11,9 +11,9 @@ describe("CronTool", () => {
     fireEvent.change(screen.getByLabelText("Cron expression"), {
       target: { value: "*/5 * * * *" },
     });
-    expect(
-      screen.getByLabelText("Description").textContent?.toLowerCase(),
-    ).toContain("every 5 minutes");
+    expect(screen.getByLabelText("Description").textContent?.toLowerCase()).toContain(
+      "every 5 minutes",
+    );
   });
 
   it("shows an error for an invalid expression", () => {

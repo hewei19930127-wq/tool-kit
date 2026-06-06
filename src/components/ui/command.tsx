@@ -18,10 +18,7 @@ export const Command = React.forwardRef<
 ));
 Command.displayName = CommandPrimitive.displayName;
 
-export function CommandDialog({
-  children,
-  ...props
-}: React.ComponentProps<typeof Dialog>) {
+export function CommandDialog({ children, ...props }: React.ComponentProps<typeof Dialog>) {
   return (
     <Dialog {...props}>
       <DialogContent className="p-0">

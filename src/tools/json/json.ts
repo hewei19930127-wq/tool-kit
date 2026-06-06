@@ -1,10 +1,7 @@
 import { toMessage } from "@/core/result";
 import type { ToolResult } from "@/core/types";
 
-function offsetToLineCol(
-  text: string,
-  offset: number,
-): { line: number; col: number } {
+function offsetToLineCol(text: string, offset: number): { line: number; col: number } {
   let line = 1;
   let col = 1;
   for (let i = 0; i < offset && i < text.length; i += 1) {
@@ -18,10 +15,7 @@ function offsetToLineCol(
   return { line, col };
 }
 
-function locate(
-  message: string,
-  input: string,
-): { line?: number; col?: number } {
+function locate(message: string, input: string): { line?: number; col?: number } {
   const lineColumn = message.match(/line (\d+) column (\d+)/);
   if (lineColumn) {
     return { line: Number(lineColumn[1]), col: Number(lineColumn[2]) };
@@ -55,9 +49,7 @@ function parse(input: string): ToolResult<unknown> {
 
 export function formatJson(input: string, indent = 2): ToolResult {
   const result = parse(input);
-  return result.ok
-    ? { ok: true, value: JSON.stringify(result.value, null, indent) }
-    : result;
+  return result.ok ? { ok: true, value: JSON.stringify(result.value, null, indent) } : result;
 }
 
 export function minifyJson(input: string): ToolResult {

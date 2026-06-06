@@ -1,7 +1,7 @@
 import { Clock } from "lucide-react";
 import type { Tool } from "@/core/types";
-import { toIso } from "./time";
 import TimeTool from "./TimeTool";
+import { toIso } from "./time";
 
 export const timeTool: Tool = {
   id: "time",

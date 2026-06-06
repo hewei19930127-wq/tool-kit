@@ -10,9 +10,7 @@ function getWorker(): Worker {
     worker = new Worker(new URL("./worker.ts", import.meta.url), {
       type: "module",
     });
-    worker.onmessage = (
-      event: MessageEvent<{ id: number; result: ToolResult }>,
-    ) => {
+    worker.onmessage = (event: MessageEvent<{ id: number; result: ToolResult }>) => {
       const { id, result } = event.data;
       pending.get(id)?.(result);
       pending.delete(id);
@@ -32,11 +30,7 @@ function getWorker(): Worker {
   return worker;
 }
 
-export function runInWorker(
-  op: string,
-  input: string,
-  opts?: TransformOpts,
-): Promise<ToolResult> {
+export function runInWorker(op: string, input: string, opts?: TransformOpts): Promise<ToolResult> {
   return new Promise((resolve) => {
     const id = ++seq;
     pending.set(id, resolve);

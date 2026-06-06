@@ -6,10 +6,7 @@ export interface QueryParam {
   value: string;
 }
 
-function encodeWith(
-  encode: (input: string) => string,
-  input: string,
-): ToolResult {
+function encodeWith(encode: (input: string) => string, input: string): ToolResult {
   try {
     return { ok: true, value: encode(input) };
   } catch (error) {
@@ -17,10 +14,7 @@ function encodeWith(
   }
 }
 
-function decodeWith(
-  decode: (input: string) => string,
-  input: string,
-): ToolResult {
+function decodeWith(decode: (input: string) => string, input: string): ToolResult {
   try {
     return { ok: true, value: decode(input) };
   } catch {

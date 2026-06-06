@@ -44,11 +44,7 @@ function formatInBase(value: bigint, base: number): string {
   return negative ? `-${output}` : output;
 }
 
-export function convertRadix(
-  input: string,
-  fromBase: number,
-  toBase: number,
-): ToolResult {
+export function convertRadix(input: string, fromBase: number, toBase: number): ToolResult {
   if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
     return { ok: false, error: "Base must be between 2 and 36" };
   }

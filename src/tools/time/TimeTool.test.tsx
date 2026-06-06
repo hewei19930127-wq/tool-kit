@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { setStorageBackend, type KV } from "@/core/services/storage";
+import { type KV, setStorageBackend } from "@/core/services/storage";
 import { useAppStore } from "@/core/store";
 import TimeTool from "./TimeTool";
 
@@ -27,16 +27,12 @@ describe("TimeTool", () => {
     fireEvent.change(screen.getByLabelText("Time input"), {
       target: { value: "0" },
     });
-    expect(screen.getByLabelText("ISO 8601").textContent).toContain(
-      "1970-01-01T00:00:00.000Z",
-    );
+    expect(screen.getByLabelText("ISO 8601").textContent).toContain("1970-01-01T00:00:00.000Z");
   });
 
   it("fills the current time on Now", () => {
     render(<TimeTool />);
     fireEvent.click(screen.getByRole("button", { name: "Now" }));
-    expect(
-      (screen.getByLabelText("Time input") as HTMLInputElement).value,
-    ).not.toBe("");
+    expect((screen.getByLabelText("Time input") as HTMLInputElement).value).not.toBe("");
   });
 });

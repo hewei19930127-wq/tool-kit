@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { EditorState } from "@codemirror/state";
 import { MergeView } from "@codemirror/merge";
+import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
-import { computeDiff, diffStats, type DiffMode } from "./diff";
+import { computeDiff, type DiffMode, diffStats } from "./diff";
 
 type View = "inline" | "split";
 
@@ -24,17 +24,11 @@ export default function DiffTool() {
       parent: mergeHost.current,
       a: {
         doc: a,
-        extensions: [
-          EditorView.editable.of(false),
-          EditorState.readOnly.of(true),
-        ],
+        extensions: [EditorView.editable.of(false), EditorState.readOnly.of(true)],
       },
       b: {
         doc: b,
-        extensions: [
-          EditorView.editable.of(false),
-          EditorState.readOnly.of(true),
-        ],
+        extensions: [EditorView.editable.of(false), EditorState.readOnly.of(true)],
       },
     });
     return () => mergeView.destroy();
@@ -97,6 +91,7 @@ export default function DiffTool() {
 
       {view === "inline" ? (
         <pre
+          role="region"
           aria-label="Inline diff"
           className="min-h-0 flex-1 overflow-auto rounded-md border border-border bg-muted p-3 whitespace-pre-wrap font-mono text-sm leading-5"
         >

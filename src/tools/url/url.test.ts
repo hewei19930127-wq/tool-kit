@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  decodeUrlComponent,
-  encodeUrlComponent,
-  encodeUrlFull,
-  parseQuery,
-} from "./url";
+import { decodeUrlComponent, encodeUrlComponent, encodeUrlFull, parseQuery } from "./url";
 
 describe("URL component encode/decode", () => {
   it("encodes reserved characters", () => {

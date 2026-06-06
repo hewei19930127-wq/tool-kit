@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { pushHistory, type HistoryEntry } from "@/core/services/history";
+import { type HistoryEntry, pushHistory } from "@/core/services/history";
 import { storage } from "@/core/services/storage";
 
 const key = (toolId: string) => `history:${toolId}`;

@@ -24,13 +24,9 @@ export default function UrlTool() {
   const result = useMemo(() => {
     if (!input) return null;
     if (op === "encode") {
-      return scope === "component"
-        ? encodeUrlComponent(input)
-        : encodeUrlFull(input);
+      return scope === "component" ? encodeUrlComponent(input) : encodeUrlFull(input);
     }
-    return scope === "component"
-      ? decodeUrlComponent(input)
-      : decodeUrlFull(input);
+    return scope === "component" ? decodeUrlComponent(input) : decodeUrlFull(input);
   }, [input, op, scope]);
 
   const query = useMemo(() => parseQuery(input), [input]);
@@ -85,10 +81,7 @@ export default function UrlTool() {
           className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         <div className="flex min-h-0 flex-col gap-3">
-          <OutputPane
-            result={result}
-            emptyHint="Encoded/decoded output appears here."
-          />
+          <OutputPane result={result} emptyHint="Encoded/decoded output appears here." />
           {query.ok && query.value.length > 0 && (
             <div className="overflow-auto rounded-md border border-border">
               <table className="w-full text-left text-sm">

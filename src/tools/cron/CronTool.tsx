@@ -15,13 +15,10 @@ const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 export default function CronTool() {
   const [input, setInput] = useToolInput("cron");
 
-  const description = useMemo(
-    () => (input.trim() ? describeCron(input) : null),
-    [input],
-  );
+  const description = useMemo(() => (input.trim() ? describeCron(input) : null), [input]);
   const runs = useMemo(
     () => (input.trim() ? nextRuns(input, 5, Date.now(), timeZone) : null),
-    [input, timeZone],
+    [input],
   );
 
   return (
@@ -60,14 +57,9 @@ export default function CronTool() {
 
       {runs?.ok && (
         <div className="flex min-h-0 flex-col overflow-auto">
-          <div className="text-xs uppercase text-muted-foreground">
-            Next 5 runs / {timeZone}
-          </div>
+          <div className="text-xs uppercase text-muted-foreground">Next 5 runs / {timeZone}</div>
           {runs.value.map((run) => (
-            <div
-              key={run}
-              className="border-b border-border py-1.5 font-mono text-sm"
-            >
+            <div key={run} className="border-b border-border py-1.5 font-mono text-sm">
               {run}
             </div>
           ))}

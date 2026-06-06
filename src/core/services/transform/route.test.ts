@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { chooseRoute, runTransform, type RouteDeps } from "./route";
+import { chooseRoute, type RouteDeps, runTransform } from "./route";
 
 describe("chooseRoute", () => {
   const opts = { workerAt: 50_000, rustAt: 1_000_000 };
@@ -26,35 +26,20 @@ describe("runTransform", () => {
 
   it("runs small inputs synchronously from the registry", async () => {
     const deps = baseDeps("main");
-    const result = await runTransform(
-      "json.minify",
-      '{"a": 1}',
-      undefined,
-      deps,
-    );
+    const result = await runTransform("json.minify", '{"a": 1}', undefined, deps);
     expect(result).toEqual({ ok: true, value: '{"a":1}' });
     expect(deps.worker).not.toHaveBeenCalled();
   });
 
   it("offloads to the worker when routed there", async () => {
     const deps = baseDeps("worker");
-    const result = await runTransform(
-      "json.format",
-      "x".repeat(60_000),
-      undefined,
-      deps,
-    );
+    const result = await runTransform("json.format", "x".repeat(60_000), undefined, deps);
     expect(result).toEqual({ ok: true, value: "worker" });
   });
 
   it("uses rust when routed and a rust path exists", async () => {
     const deps = baseDeps("rust");
-    const result = await runTransform(
-      "json.format",
-      "x".repeat(2_000_000),
-      undefined,
-      deps,
-    );
+    const result = await runTransform("json.format", "x".repeat(2_000_000), undefined, deps);
     expect(result).toEqual({ ok: true, value: "rust" });
   });
 
@@ -64,34 +49,19 @@ describe("runTransform", () => {
       worker: vi.fn(async () => ({ ok: true, value: "worker" }) as const),
       rust: vi.fn(async () => ({ ok: false, error: "rust failed" }) as const),
     };
-    const result = await runTransform(
-      "json.format",
-      "x".repeat(2_000_000),
-      undefined,
-      deps,
-    );
+    const result = await runTransform("json.format", "x".repeat(2_000_000), undefined, deps);
     expect(result).toEqual({ ok: true, value: "worker" });
   });
 
   it("falls back to the worker when routed to rust but no rust path exists", async () => {
     const deps = baseDeps("rust");
-    const result = await runTransform(
-      "json.sortKeys",
-      "x".repeat(2_000_000),
-      undefined,
-      deps,
-    );
+    const result = await runTransform("json.sortKeys", "x".repeat(2_000_000), undefined, deps);
     expect(result).toEqual({ ok: true, value: "worker" });
     expect(deps.rust).not.toHaveBeenCalled();
   });
 
   it("errors for an unknown op", async () => {
-    const result = await runTransform(
-      "nope.op",
-      "x",
-      undefined,
-      baseDeps("main"),
-    );
+    const result = await runTransform("nope.op", "x", undefined, baseDeps("main"));
     expect(result.ok).toBe(false);
   });
 });

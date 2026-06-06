@@ -10,9 +10,6 @@ export const urlTool: Tool = {
   component: UrlTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();
-    return (
-      /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ||
-      /%[0-9A-Fa-f]{2}/.test(trimmed)
-    );
+    return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) || /%[0-9A-Fa-f]{2}/.test(trimmed);
   },
 };

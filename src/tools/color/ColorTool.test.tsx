@@ -16,9 +16,7 @@ describe("ColorTool", () => {
     fireEvent.change(screen.getByLabelText("Color input"), {
       target: { value: "#ff0000" },
     });
-    expect(screen.getByLabelText("rgb").textContent).toContain(
-      "rgb(255, 0, 0)",
-    );
+    expect(screen.getByLabelText("rgb").textContent).toContain("rgb(255, 0, 0)");
   });
 
   it("computes a contrast ratio", () => {

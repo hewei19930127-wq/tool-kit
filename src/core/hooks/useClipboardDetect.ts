@@ -32,8 +32,7 @@ export function useClipboardDetect(): {
 
         const match = tools.find(
           (candidate) =>
-            candidate.id !== activeToolId &&
-            candidate.detectClipboard?.(clipboardText),
+            candidate.id !== activeToolId && candidate.detectClipboard?.(clipboardText),
         );
         setText(match ? clipboardText : null);
         setSuggestedToolId(match ? match.id : null);

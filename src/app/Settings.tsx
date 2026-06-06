@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Check, X } from "lucide-react";
 import { useState } from "react";
-import { useAppStore, type ThemeMode } from "@/core/store";
+import { type ThemeMode, useAppStore } from "@/core/store";
 
 const THEMES: ThemeMode[] = ["system", "light", "dark"];
 
@@ -19,9 +19,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
       setHotkey(draft);
       setStatus("Saved");
     } catch (error) {
-      setStatus(
-        error instanceof Error ? error.message : "Could not register shortcut",
-      );
+      setStatus(error instanceof Error ? error.message : "Could not register shortcut");
     }
   }
 
@@ -45,8 +43,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
             <h2 className="text-sm font-medium">Appearance</h2>
             <p className="text-xs text-muted-foreground">Theme</p>
           </div>
-          <div
-            role="group"
+          <fieldset
             aria-label="Theme"
             className="inline-flex w-fit rounded-md border border-border p-1"
           >
@@ -64,7 +61,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
                 {item}
               </button>
             ))}
-          </div>
+          </fieldset>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -91,9 +88,7 @@ export function Settings({ onClose }: { onClose: () => void }) {
               <Check className="h-4 w-4" strokeWidth={1.75} />
               Apply
             </button>
-            {status && (
-              <span className="text-xs text-muted-foreground">{status}</span>
-            )}
+            {status && <span className="text-xs text-muted-foreground">{status}</span>}
           </div>
         </section>
       </div>

@@ -1,15 +1,9 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
-import { runRegex, type RegexMatch } from "./regex";
+import { type RegexMatch, runRegex } from "./regex";
 import { CHEATSHEET, SNIPPETS } from "./snippets";
 
-function Highlighted({
-  text,
-  matches,
-}: {
-  text: string;
-  matches: RegexMatch[];
-}) {
+function Highlighted({ text, matches }: { text: string; matches: RegexMatch[] }) {
   if (matches.length === 0) return <>{text}</>;
 
   const nodes: ReactNode[] = [];
@@ -63,10 +57,7 @@ export default function RegexTool() {
             onChange={(event) => setFlags(event.target.value)}
             className="w-20 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
-          <span
-            aria-label="Match count"
-            className="min-w-24 text-sm text-muted-foreground"
-          >
+          <span aria-label="Match count" className="min-w-24 text-sm text-muted-foreground">
             {result?.ok ? `${matches.length} matches` : ""}
           </span>
         </div>
@@ -115,9 +106,7 @@ export default function RegexTool() {
 
       <aside className="flex max-h-full w-full shrink-0 flex-col gap-3 overflow-auto lg:w-64">
         <div>
-          <div className="mb-1 text-xs uppercase text-muted-foreground">
-            Snippets
-          </div>
+          <div className="mb-1 text-xs uppercase text-muted-foreground">Snippets</div>
           {SNIPPETS.map((snippet) => (
             <button
               key={snippet.name}
@@ -134,14 +123,10 @@ export default function RegexTool() {
           ))}
         </div>
         <div>
-          <div className="mb-1 text-xs uppercase text-muted-foreground">
-            Cheatsheet
-          </div>
+          <div className="mb-1 text-xs uppercase text-muted-foreground">Cheatsheet</div>
           {CHEATSHEET.map((item) => (
             <div key={item.token} className="flex gap-2 px-2 py-1 text-xs">
-              <code className="shrink-0 font-mono text-primary">
-                {item.token}
-              </code>
+              <code className="shrink-0 font-mono text-primary">{item.token}</code>
               <span className="text-muted-foreground">{item.meaning}</span>
             </div>
           ))}

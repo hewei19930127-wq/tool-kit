@@ -7,19 +7,11 @@ export const jsonTool: Tool = {
   id: "json",
   name: "JSON",
   icon: Braces,
-  keywords: [
-    "json",
-    "format",
-    "pretty",
-    "minify",
-    "validate",
-    "escape",
-    "格式化",
-  ],
+  keywords: ["json", "format", "pretty", "minify", "validate", "escape", "格式化"],
   component: JsonTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();
-    return /^[{\[]/.test(trimmed) && formatJson(trimmed).ok;
+    return /^[{[]/.test(trimmed) && formatJson(trimmed).ok;
   },
   commands: [
     {

@@ -13,6 +13,7 @@ export function OutputPane({
     <div className="h-full min-h-64 overflow-auto rounded-md border border-border bg-muted p-3">
       {result?.ok && (
         <pre
+          role="region"
           aria-label={label}
           className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
         >

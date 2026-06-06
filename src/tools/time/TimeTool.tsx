@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import type { ToolResult } from "@/core/types";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import type { ToolResult } from "@/core/types";
 import {
   convertTimezone,
   formatCustom,
@@ -13,9 +13,7 @@ import {
 function Row({ label, result }: { label: string; result: ToolResult }) {
   return (
     <div className="flex items-baseline gap-3 border-b border-border py-2">
-      <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">
-        {label}
-      </span>
+      <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">{label}</span>
       {result.ok ? (
         <span aria-label={label} className="break-all font-mono text-sm">
           {result.value}
@@ -67,9 +65,7 @@ export default function TimeTool() {
       </div>
 
       {!rows && (
-        <p className="text-sm text-muted-foreground">
-          Enter a time above to see conversions.
-        </p>
+        <p className="text-sm text-muted-foreground">Enter a time above to see conversions.</p>
       )}
 
       {rows && (

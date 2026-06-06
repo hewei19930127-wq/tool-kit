@@ -15,10 +15,7 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const setActiveTool = useAppStore((state) => state.setActiveTool);
   const commands = useMemo(
-    () =>
-      tools.flatMap((tool) =>
-        (tool.commands ?? []).map((command) => ({ command, tool })),
-      ),
+    () => tools.flatMap((tool) => (tool.commands ?? []).map((command) => ({ command, tool }))),
     [],
   );
 

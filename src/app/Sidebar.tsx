@@ -31,9 +31,7 @@ function ToolRow({ tool }: { tool: (typeof tools)[number] }) {
         className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground opacity-0 outline-none hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary group-hover:opacity-100"
       >
         <Star
-          className={`h-3.5 w-3.5 ${
-            favorite ? "fill-favorite text-favorite" : ""
-          }`}
+          className={`h-3.5 w-3.5 ${favorite ? "fill-favorite text-favorite" : ""}`}
           strokeWidth={1.75}
         />
       </button>

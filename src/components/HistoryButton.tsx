@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { History } from "lucide-react";
+import { useState } from "react";
 import type { HistoryEntry } from "@/core/services/history";
 
 export function HistoryButton({
@@ -10,8 +10,7 @@ export function HistoryButton({
   onRestore: (input: string) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const preview = (text: string) =>
-    text.length > 48 ? `${text.slice(0, 48)}...` : text;
+  const preview = (text: string) => (text.length > 48 ? `${text.slice(0, 48)}...` : text);
 
   return (
     <div className="relative">
@@ -27,9 +26,7 @@ export function HistoryButton({
       {open && (
         <div className="absolute right-0 z-10 mt-1 w-72 rounded-md border border-border bg-background p-1 shadow-md">
           {entries.length === 0 && (
-            <p className="px-2 py-3 text-center text-xs text-muted-foreground">
-              No history yet.
-            </p>
+            <p className="px-2 py-3 text-center text-xs text-muted-foreground">No history yet.</p>
           )}
           {entries.map((entry) => (
             <button

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { setStorageBackend, type KV } from "@/core/services/storage";
+import { type KV, setStorageBackend } from "@/core/services/storage";
 import { useAppStore } from "@/core/store";
 import XmlTool from "./XmlTool";
 
@@ -28,9 +28,7 @@ describe("XmlTool", () => {
       target: { value: "<a><b>1</b></a>" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
-    expect((await screen.findByLabelText("Output")).textContent).toContain(
-      "<b>1</b>",
-    );
+    expect((await screen.findByLabelText("Output")).textContent).toContain("<b>1</b>");
   });
 
   it("shows an error for malformed XML", () => {

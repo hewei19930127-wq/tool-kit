@@ -50,10 +50,7 @@ export default function RadixTool() {
           placeholder="Enter a number"
           className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
-        <label
-          htmlFor="radix-source-base"
-          className="text-sm text-muted-foreground"
-        >
+        <label htmlFor="radix-source-base" className="text-sm text-muted-foreground">
           From base
         </label>
         <select
@@ -71,11 +68,7 @@ export default function RadixTool() {
         </select>
       </div>
 
-      {!rows && (
-        <p className="text-sm text-muted-foreground">
-          Enter a number to see every base.
-        </p>
-      )}
+      {!rows && <p className="text-sm text-muted-foreground">Enter a number to see every base.</p>}
       {rows && "error" in rows && (
         <div role="alert" className="font-mono text-sm text-error">
           {rows.error}
@@ -84,28 +77,18 @@ export default function RadixTool() {
       {rows && "values" in rows && (
         <div className="flex min-h-0 flex-col overflow-auto">
           {rows.values.map((row) => (
-            <div
-              key={row.base}
-              className="flex items-baseline gap-3 border-b border-border py-2"
-            >
+            <div key={row.base} className="flex items-baseline gap-3 border-b border-border py-2">
               <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">
                 {LABELS[row.base]}
               </span>
-              <span
-                aria-label={LABELS[row.base]}
-                className="break-all font-mono text-sm"
-              >
+              <span aria-label={LABELS[row.base]} className="break-all font-mono text-sm">
                 {row.result.ok ? row.result.value : row.result.error}
               </span>
             </div>
           ))}
           <div className="flex items-baseline gap-3 py-2">
-            <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">
-              Bitwise
-            </span>
-            <span aria-label="Bitwise" className="break-all font-mono text-sm">
-              {rows.bitwise}
-            </span>
+            <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">Bitwise</span>
+            <span className="break-all font-mono text-sm">{rows.bitwise}</span>
           </div>
         </div>
       )}

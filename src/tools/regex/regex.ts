@@ -7,11 +7,7 @@ export interface RegexMatch {
   groups: string[];
 }
 
-export function runRegex(
-  pattern: string,
-  flags: string,
-  text: string,
-): ToolResult<RegexMatch[]> {
+export function runRegex(pattern: string, flags: string, text: string): ToolResult<RegexMatch[]> {
   let regex: RegExp;
 
   try {

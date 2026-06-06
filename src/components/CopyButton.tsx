@@ -1,6 +1,6 @@
-import { useState } from "react";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import { Check, Copy } from "lucide-react";
+import { useState } from "react";
 
 export function CopyButton({
   text,
