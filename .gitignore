@@ -1,0 +1,14 @@
+# Brainstorm / visual-companion artifacts
+.superpowers/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Tauri / Rust
+src-tauri/target/
+target/
+
+# macOS
+.DS_Store
