@@ -15,6 +15,7 @@ phased implementation plans live alongside it under `docs/superpowers/plans/`.
 ```bash
 npm run dev          # Vite dev server in the browser (port 1420, storage falls back to localStorage)
 npm run tauri dev    # full native app — requires Rust/Cargo on PATH (rustup); only way to test hotkey/tray/eyedropper
+npm run tauri build  # production native app bundle, including macOS .dmg under src-tauri/target/release/bundle/dmg/
 npm test             # vitest run (one-shot, CI-style)
 npm run test:watch   # vitest in watch mode
 npm run build        # tsc (type-check) THEN vite build — a type error fails the build
