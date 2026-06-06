@@ -22,20 +22,22 @@ describe("JsonTool", () => {
     useAppStore.setState({ toolInputs: {} });
   });
 
-  it("formats input on Format", () => {
+  it("formats input on Format", async () => {
     render(<JsonTool />);
     const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: '{"b":1,"a":2}' } });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
-    expect(screen.getByLabelText("Output").textContent).toContain('"b": 1');
+    expect((await screen.findByLabelText("Output")).textContent).toContain(
+      '"b": 1',
+    );
   });
 
-  it("shows an error state for invalid JSON", () => {
+  it("shows an error state for invalid JSON", async () => {
     render(<JsonTool />);
     const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: "{" } });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
 
   it("validates input without rewriting it", () => {

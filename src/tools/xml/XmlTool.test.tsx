@@ -22,13 +22,15 @@ describe("XmlTool", () => {
     useAppStore.setState({ toolInputs: {} });
   });
 
-  it("formats valid XML", () => {
+  it("formats valid XML", async () => {
     render(<XmlTool />);
     fireEvent.change(screen.getByLabelText("XML input"), {
       target: { value: "<a><b>1</b></a>" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
-    expect(screen.getByLabelText("Output").textContent).toContain("<b>1</b>");
+    expect((await screen.findByLabelText("Output")).textContent).toContain(
+      "<b>1</b>",
+    );
   });
 
   it("shows an error for malformed XML", () => {

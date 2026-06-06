@@ -4,14 +4,17 @@ import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { useTransform } from "@/core/hooks/useTransform";
 import type { ToolResult } from "@/core/types";
-import { formatXml, minifyXml, validateXml } from "./xml";
+import { validateXml } from "./xml";
 
-type Action = (input: string) => ToolResult;
+type Action =
+  | { label: string; op: string }
+  | { label: string; run: (input: string) => ToolResult };
 
-const ACTIONS: { label: string; run: Action }[] = [
-  { label: "Format", run: formatXml },
-  { label: "Minify", run: minifyXml },
+const ACTIONS: Action[] = [
+  { label: "Format", op: "xml.format" },
+  { label: "Minify", op: "xml.minify" },
   { label: "Validate", run: validateXml },
 ];
 
@@ -19,9 +22,11 @@ export default function XmlTool() {
   const [input, setInput] = useToolInput("xml");
   const [result, setResult] = useState<ToolResult | null>(null);
   const { entries, record } = useHistory("xml");
+  const { run, pending } = useTransform();
 
-  function apply(run: Action) {
-    const next = run(input);
+  async function apply(action: Action) {
+    const next =
+      "op" in action ? await run(action.op, input) : action.run(input);
     setResult(next);
     if (next.ok) record(input, next.value);
   }
@@ -33,12 +38,16 @@ export default function XmlTool() {
           <button
             key={action.label}
             type="button"
-            onClick={() => apply(action.run)}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => void apply(action)}
+            disabled={pending}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
           >
             {action.label}
           </button>
         ))}
+        {pending && (
+          <span className="text-xs text-muted-foreground">Working...</span>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <HistoryButton entries={entries} onRestore={setInput} />
           <CopyButton text={result?.ok ? result.value : ""} />

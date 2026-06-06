@@ -7,6 +7,7 @@ describe("app store", () => {
       activeToolId: null,
       favorites: [],
       theme: "system",
+      hotkey: "Alt+Space",
       toolInputs: {},
     });
   });
@@ -25,9 +26,21 @@ describe("app store", () => {
   });
 
   it("hydrates persisted slices", () => {
-    useAppStore.getState().hydrate({ favorites: ["base64"], theme: "dark" });
+    useAppStore
+      .getState()
+      .hydrate({ favorites: ["base64"], theme: "dark" });
     expect(useAppStore.getState().favorites).toEqual(["base64"]);
     expect(useAppStore.getState().theme).toBe("dark");
+  });
+
+  it("hydrates the hotkey", () => {
+    useAppStore.getState().hydrate({ hotkey: "Control+Space" });
+    expect(useAppStore.getState().hotkey).toBe("Control+Space");
+  });
+
+  it("updates the hotkey", () => {
+    useAppStore.getState().setHotkey("Alt+Shift+Space");
+    expect(useAppStore.getState().hotkey).toBe("Alt+Shift+Space");
   });
 
   it("sets and overwrites a tool's input independently", () => {

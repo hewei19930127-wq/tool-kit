@@ -3,9 +3,11 @@ use tauri::{
     tray::TrayIconBuilder,
     Manager,
 };
-use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
+use tauri_plugin_global_shortcut::ShortcutState;
 
 mod eyedropper;
+mod fastpath;
+mod settings;
 
 fn toggle_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
@@ -24,17 +26,22 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![eyedropper::pick_color])
+        .invoke_handler(tauri::generate_handler![
+            eyedropper::pick_color,
+            fastpath::json_format,
+            fastpath::json_minify,
+            fastpath::xml_format,
+            fastpath::xml_minify,
+            settings::set_hotkey,
+        ])
         .setup(|app| {
             #[cfg(desktop)]
             {
                 app.handle().plugin(
                     tauri_plugin_global_shortcut::Builder::new()
                         .with_shortcuts(["alt+space"])?
-                        .with_handler(|app, shortcut, event| {
-                            if event.state == ShortcutState::Pressed
-                                && shortcut.matches(Modifiers::ALT, Code::Space)
-                            {
+                        .with_handler(|app, _shortcut, event| {
+                            if event.state == ShortcutState::Pressed {
                                 toggle_main_window(app);
                             }
                         })

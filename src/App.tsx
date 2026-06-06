@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { ClipboardBanner } from "@/app/ClipboardBanner";
 import { CommandPalette } from "@/app/CommandPalette";
 import { DetailHost } from "@/app/DetailHost";
+import { Settings } from "@/app/Settings";
 import { Sidebar } from "@/app/Sidebar";
 import { ThemeProvider } from "@/app/ThemeProvider";
 import { useClipboardDetect } from "@/core/hooks/useClipboardDetect";
@@ -15,6 +17,7 @@ function App() {
   const setActiveTool = useAppStore((state) => state.setActiveTool);
   const setToolInput = useAppStore((state) => state.setToolInput);
   const [ready, setReady] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const {
     text: clipText,
     suggestedToolId,
@@ -26,11 +29,16 @@ function App() {
     Promise.all([
       storage().get<string[]>("favorites"),
       storage().get<ThemeMode>("theme"),
-    ]).then(([favorites, theme]) => {
+      storage().get<string>("hotkey"),
+    ]).then(([favorites, theme, hotkey]) => {
       hydrate({
         ...(favorites ? { favorites } : {}),
         ...(theme ? { theme } : {}),
+        ...(hotkey ? { hotkey } : {}),
       });
+      if (hotkey) {
+        void invoke("set_hotkey", { accelerator: hotkey }).catch(() => {});
+      }
       setReady(true);
     });
   }, [hydrate]);
@@ -39,8 +47,21 @@ function App() {
     const unsubscribe = useAppStore.subscribe((state) => {
       void storage().set("favorites", state.favorites);
       void storage().set("theme", state.theme);
+      void storage().set("hotkey", state.hotkey);
     });
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "," && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setSettingsOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   if (!ready) return null;
@@ -48,7 +69,7 @@ function App() {
   return (
     <ThemeProvider>
       <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
-        <Sidebar />
+        <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
         <div className="flex min-w-0 flex-1 flex-col">
           {clipText && (
             <ClipboardBanner
@@ -68,7 +89,11 @@ function App() {
               onDismiss={clearClip}
             />
           )}
-          <DetailHost />
+          {settingsOpen ? (
+            <Settings onClose={() => setSettingsOpen(false)} />
+          ) : (
+            <DetailHost />
+          )}
         </div>
         <CommandPalette />
       </div>

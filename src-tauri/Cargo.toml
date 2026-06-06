@@ -24,7 +24,8 @@ tauri-plugin-store = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-clipboard-manager = "2"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
+quick-xml = "0.36"
 objc2 = "0.6.4"
 objc2-app-kit = { version = "0.3.2", default-features = false, features = ["NSColor", "NSColorSampler", "NSColorSpace", "block2", "objc2-core-foundation"] }
 objc2-foundation = "0.3.2"

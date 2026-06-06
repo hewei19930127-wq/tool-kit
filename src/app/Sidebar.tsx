@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Settings as SettingsIcon, Star } from "lucide-react";
 import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
 
@@ -41,7 +41,7 @@ function ToolRow({ tool }: { tool: (typeof tools)[number] }) {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
   const favorites = useAppStore((state) => state.favorites);
   const pinned = tools.filter((tool) => favorites.includes(tool.id));
   const rest = tools.filter((tool) => !favorites.includes(tool.id));
@@ -63,6 +63,14 @@ export function Sidebar() {
       {rest.map((tool) => (
         <ToolRow key={tool.id} tool={tool} />
       ))}
+      <button
+        type="button"
+        onClick={onOpenSettings}
+        className="mt-auto flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary"
+      >
+        <SettingsIcon className="h-4 w-4" strokeWidth={1.75} />
+        <span>Settings</span>
+      </button>
     </nav>
   );
 }

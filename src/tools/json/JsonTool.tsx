@@ -4,23 +4,23 @@ import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { useTransform } from "@/core/hooks/useTransform";
 import type { ToolResult } from "@/core/types";
 import {
   escapeJson,
-  formatJson,
-  minifyJson,
-  sortJsonKeys,
   unescapeJson,
   validateJson,
 } from "./json";
 
-type Action = (input: string) => ToolResult;
+type Action =
+  | { label: string; op: string }
+  | { label: string; run: (input: string) => ToolResult };
 
-const ACTIONS: { label: string; run: Action }[] = [
-  { label: "Format", run: formatJson },
-  { label: "Minify", run: minifyJson },
+const ACTIONS: Action[] = [
+  { label: "Format", op: "json.format" },
+  { label: "Minify", op: "json.minify" },
   { label: "Validate", run: validateJson },
-  { label: "Sort keys", run: sortJsonKeys },
+  { label: "Sort keys", op: "json.sortKeys" },
   { label: "Escape", run: escapeJson },
   { label: "Unescape", run: unescapeJson },
 ];
@@ -29,9 +29,11 @@ export default function JsonTool() {
   const [input, setInput] = useToolInput("json");
   const [result, setResult] = useState<ToolResult | null>(null);
   const { entries, record } = useHistory("json");
+  const { run, pending } = useTransform();
 
-  function apply(run: Action) {
-    const next = run(input);
+  async function apply(action: Action) {
+    const next =
+      "op" in action ? await run(action.op, input) : action.run(input);
     setResult(next);
     if (next.ok) record(input, next.value);
   }
@@ -43,12 +45,16 @@ export default function JsonTool() {
           <button
             key={action.label}
             type="button"
-            onClick={() => apply(action.run)}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => void apply(action)}
+            disabled={pending}
+            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
           >
             {action.label}
           </button>
         ))}
+        {pending && (
+          <span className="text-xs text-muted-foreground">Working...</span>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <HistoryButton entries={entries} onRestore={setInput} />
           <CopyButton text={result?.ok ? result.value : ""} />
