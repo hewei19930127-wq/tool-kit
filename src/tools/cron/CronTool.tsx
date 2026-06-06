@@ -10,9 +10,10 @@ const PRESETS: { label: string; expr: string }[] = [
   { label: "Weekdays 9am", expr: "0 9 * * 1-5" },
 ];
 
+const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+
 export default function CronTool() {
   const [input, setInput] = useToolInput("cron");
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
   const description = useMemo(
     () => (input.trim() ? describeCron(input) : null),

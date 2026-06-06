@@ -6,7 +6,6 @@ import TimeTool from "./TimeTool";
 export const timeTool: Tool = {
   id: "time",
   name: "Time",
-  category: "convert-other",
   icon: Clock,
   keywords: ["time", "timestamp", "epoch", "unix", "iso", "timezone", "时间"],
   component: TimeTool,

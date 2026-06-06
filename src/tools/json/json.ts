@@ -1,3 +1,4 @@
+import { toMessage } from "@/core/result";
 import type { ToolResult } from "@/core/types";
 
 function offsetToLineCol(
@@ -17,7 +18,10 @@ function offsetToLineCol(
   return { line, col };
 }
 
-function locate(message: string, input: string): { line?: number; col?: number } {
+function locate(
+  message: string,
+  input: string,
+): { line?: number; col?: number } {
   const lineColumn = message.match(/line (\d+) column (\d+)/);
   if (lineColumn) {
     return { line: Number(lineColumn[1]), col: Number(lineColumn[2]) };
@@ -44,7 +48,7 @@ function parse(input: string): ToolResult<unknown> {
   try {
     return { ok: true, value: JSON.parse(input) };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = toMessage(error);
     return { ok: false, error: message, ...locate(message, input) };
   }
 }

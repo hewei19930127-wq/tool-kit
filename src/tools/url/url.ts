@@ -1,3 +1,4 @@
+import { toMessage } from "@/core/result";
 import type { ToolResult } from "@/core/types";
 
 export interface QueryParam {
@@ -5,42 +6,42 @@ export interface QueryParam {
   value: string;
 }
 
-export function encodeUrlComponent(input: string): ToolResult {
+function encodeWith(
+  encode: (input: string) => string,
+  input: string,
+): ToolResult {
   try {
-    return { ok: true, value: encodeURIComponent(input) };
+    return { ok: true, value: encode(input) };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    return { ok: false, error: toMessage(error) };
   }
+}
+
+function decodeWith(
+  decode: (input: string) => string,
+  input: string,
+): ToolResult {
+  try {
+    return { ok: true, value: decode(input) };
+  } catch {
+    return { ok: false, error: "Malformed percent-encoding" };
+  }
+}
+
+export function encodeUrlComponent(input: string): ToolResult {
+  return encodeWith(encodeURIComponent, input);
 }
 
 export function decodeUrlComponent(input: string): ToolResult {
-  try {
-    return { ok: true, value: decodeURIComponent(input) };
-  } catch {
-    return { ok: false, error: "Malformed percent-encoding" };
-  }
+  return decodeWith(decodeURIComponent, input);
 }
 
 export function encodeUrlFull(input: string): ToolResult {
-  try {
-    return { ok: true, value: encodeURI(input) };
-  } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
+  return encodeWith(encodeURI, input);
 }
 
 export function decodeUrlFull(input: string): ToolResult {
-  try {
-    return { ok: true, value: decodeURI(input) };
-  } catch {
-    return { ok: false, error: "Malformed percent-encoding" };
-  }
+  return decodeWith(decodeURI, input);
 }
 
 export function parseQuery(input: string): ToolResult<QueryParam[]> {

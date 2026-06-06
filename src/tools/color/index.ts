@@ -6,7 +6,6 @@ import { parseColor } from "./color";
 export const colorTool: Tool = {
   id: "color",
   name: "Color",
-  category: "convert-other",
   icon: Palette,
   keywords: ["color", "colour", "hex", "rgb", "hsl", "contrast", "颜色"],
   component: ColorTool,

@@ -1,5 +1,6 @@
 import parser from "cron-parser";
 import cronstrue from "cronstrue";
+import { toMessage } from "@/core/result";
 import type { ToolResult } from "@/core/types";
 
 export function describeCron(expr: string): ToolResult {
@@ -12,10 +13,7 @@ export function describeCron(expr: string): ToolResult {
       value: cronstrue.toString(input, { throwExceptionOnParseError: true }),
     };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    return { ok: false, error: toMessage(error) };
   }
 }
 
@@ -41,9 +39,6 @@ export function nextRuns(
 
     return { ok: true, value };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    return { ok: false, error: toMessage(error) };
   }
 }

@@ -6,7 +6,6 @@ import { escapeJson, formatJson, unescapeJson } from "./json";
 export const jsonTool: Tool = {
   id: "json",
   name: "JSON",
-  category: "encode-text",
   icon: Braces,
   keywords: [
     "json",

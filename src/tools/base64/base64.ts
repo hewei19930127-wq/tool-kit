@@ -1,3 +1,4 @@
+import { toMessage } from "@/core/result";
 import type { ToolResult } from "@/core/types";
 
 function toUrlSafe(base64: string): string {
@@ -18,10 +19,7 @@ export function encodeBase64(input: string, urlSafe = false): ToolResult {
     const base64 = btoa(binary);
     return { ok: true, value: urlSafe ? toUrlSafe(base64) : base64 };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    return { ok: false, error: toMessage(error) };
   }
 }
 

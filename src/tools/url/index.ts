@@ -5,7 +5,6 @@ import UrlTool from "./UrlTool";
 export const urlTool: Tool = {
   id: "url",
   name: "URL",
-  category: "encode-text",
   icon: Link,
   keywords: ["url", "uri", "encode", "decode", "percent", "query", "参数"],
   component: UrlTool,

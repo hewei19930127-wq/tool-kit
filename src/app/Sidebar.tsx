@@ -3,14 +3,12 @@ import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
 
 function ToolRow({ tool }: { tool: (typeof tools)[number] }) {
-  const activeToolId = useAppStore((state) => state.activeToolId);
-  const favorites = useAppStore((state) => state.favorites);
+  const active = useAppStore((state) => state.activeToolId === tool.id);
+  const favorite = useAppStore((state) => state.favorites.includes(tool.id));
   const setActiveTool = useAppStore((state) => state.setActiveTool);
   const toggleFavorite = useAppStore((state) => state.toggleFavorite);
 
   const Icon = tool.icon;
-  const active = tool.id === activeToolId;
-  const favorite = favorites.includes(tool.id);
 
   return (
     <div

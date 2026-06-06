@@ -6,7 +6,6 @@ import Base64Tool from "./Base64Tool";
 export const base64Tool: Tool = {
   id: "base64",
   name: "Base64",
-  category: "encode-text",
   icon: Binary,
   keywords: ["base64", "encode", "decode", "atob", "btoa", "编码"],
   component: Base64Tool,

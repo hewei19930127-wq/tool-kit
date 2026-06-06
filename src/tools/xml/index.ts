@@ -6,7 +6,6 @@ import { validateXml } from "./xml";
 export const xmlTool: Tool = {
   id: "xml",
   name: "XML",
-  category: "encode-text",
   icon: Code2,
   keywords: ["xml", "format", "pretty", "minify", "validate", "格式化"],
   component: XmlTool,

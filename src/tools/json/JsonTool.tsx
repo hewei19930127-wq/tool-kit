@@ -17,12 +17,12 @@ import {
 type Action = (input: string) => ToolResult;
 
 const ACTIONS: { label: string; run: Action }[] = [
-  { label: "Format", run: (input) => formatJson(input) },
-  { label: "Minify", run: (input) => minifyJson(input) },
-  { label: "Validate", run: (input) => validateJson(input) },
-  { label: "Sort keys", run: (input) => sortJsonKeys(input) },
-  { label: "Escape", run: (input) => escapeJson(input) },
-  { label: "Unescape", run: (input) => unescapeJson(input) },
+  { label: "Format", run: formatJson },
+  { label: "Minify", run: minifyJson },
+  { label: "Validate", run: validateJson },
+  { label: "Sort keys", run: sortJsonKeys },
+  { label: "Escape", run: escapeJson },
+  { label: "Unescape", run: unescapeJson },
 ];
 
 export default function JsonTool() {

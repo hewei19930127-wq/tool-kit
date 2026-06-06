@@ -1,3 +1,4 @@
+import { toMessage } from "@/core/result";
 import type { ToolResult } from "@/core/types";
 
 export interface RegexMatch {
@@ -16,10 +17,7 @@ export function runRegex(
   try {
     regex = new RegExp(pattern, flags);
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    return { ok: false, error: toMessage(error) };
   }
 
   const matches: RegexMatch[] = [];
