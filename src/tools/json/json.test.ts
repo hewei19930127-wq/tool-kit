@@ -49,6 +49,7 @@ describe("validateJson", () => {
     expect(validateJson('{"a":1}')).toEqual({
       ok: true,
       value: "Valid JSON",
+      valueKey: "tools.json.messages.valid",
     });
   });
 

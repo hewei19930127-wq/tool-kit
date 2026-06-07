@@ -4,8 +4,8 @@ import RegexTool from "./RegexTool";
 
 export const regexTool: Tool = {
   id: "regex",
-  name: "Regex",
+  nameKey: "tools.regex.name",
   icon: Regex,
-  keywords: ["regex", "regexp", "pattern", "match", "test", "正则"],
+  keywordsKey: "tools.regex.keywords",
   component: RegexTool,
 };

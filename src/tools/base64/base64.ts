@@ -25,7 +25,9 @@ export function encodeBase64(input: string, urlSafe = false): ToolResult {
 
 export function decodeBase64(input: string, urlSafe = false): ToolResult {
   const trimmed = input.trim();
-  if (!trimmed) return { ok: false, error: "Input is empty" };
+  if (!trimmed) {
+    return { ok: false, error: "Input is empty", errorKey: "common.errors.inputEmpty" };
+  }
 
   try {
     const normalized = urlSafe ? fromUrlSafe(trimmed) : trimmed;
@@ -36,6 +38,10 @@ export function decodeBase64(input: string, urlSafe = false): ToolResult {
       value: new TextDecoder("utf-8", { fatal: true }).decode(bytes),
     };
   } catch {
-    return { ok: false, error: "Invalid Base64 input" };
+    return {
+      ok: false,
+      error: "Invalid Base64 input",
+      errorKey: "tools.base64.errors.invalid",
+    };
   }
 }

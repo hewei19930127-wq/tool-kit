@@ -13,7 +13,13 @@ export interface ColorModels {
 
 export function parseColor(input: string): ToolResult<ColorModels> {
   const color = colord(input.trim());
-  if (!color.isValid()) return { ok: false, error: "Unrecognized color" };
+  if (!color.isValid()) {
+    return {
+      ok: false,
+      error: "Unrecognized color",
+      errorKey: "tools.color.errors.unrecognized",
+    };
+  }
 
   const hsv = color.toHsv();
 
@@ -33,7 +39,11 @@ export function contrastRatio(fg: string, bg: string): ToolResult<number> {
   const background = colord(bg.trim());
 
   if (!foreground.isValid() || !background.isValid()) {
-    return { ok: false, error: "Both colors must be valid" };
+    return {
+      ok: false,
+      error: "Both colors must be valid",
+      errorKey: "tools.color.errors.invalidPair",
+    };
   }
 
   return { ok: true, value: foreground.contrast(background) };

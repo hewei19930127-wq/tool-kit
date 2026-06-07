@@ -1,32 +1,37 @@
+import { useI18n } from "@/core/i18n";
+import { resultError, resultValue } from "@/core/i18n/result";
 import type { ToolResult } from "@/core/types";
 
 export function OutputPane({
   result,
   emptyHint,
-  label = "Output",
+  label,
 }: {
   result: ToolResult | null;
   emptyHint: string;
   label?: string;
 }) {
+  const { t } = useI18n();
+  const outputLabel = label ?? t("components.output.label");
+
   return (
     <div className="h-full min-h-64 overflow-auto rounded-md border border-border bg-muted p-3">
       {result?.ok && (
         <pre
           role="region"
-          aria-label={label}
+          aria-label={outputLabel}
           className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
         >
-          {result.value}
+          {resultValue(result, t)}
         </pre>
       )}
       {result && !result.ok && (
         <div role="alert" className="font-mono text-sm text-error">
-          {result.error}
+          {resultError(result, t)}
           {result.line != null && (
             <span>
               {" "}
-              (line {result.line}, col {result.col})
+              {t("components.output.lineCol", { line: result.line, col: result.col ?? "" })}
             </span>
           )}
         </div>

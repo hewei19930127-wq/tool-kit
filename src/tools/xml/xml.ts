@@ -10,13 +10,17 @@ const XML_OPTIONS = {
 } as const;
 
 function checkXml(input: string): ToolResult {
-  if (!input.trim()) return { ok: false, error: "Input is empty" };
+  if (!input.trim()) {
+    return { ok: false, error: "Input is empty", errorKey: "common.errors.inputEmpty" };
+  }
 
   const validation = XMLValidator.validate(input, {
     allowBooleanAttributes: true,
   });
 
-  if (validation === true) return { ok: true, value: "Well-formed" };
+  if (validation === true) {
+    return { ok: true, value: "Well-formed", valueKey: "tools.xml.messages.wellFormed" };
+  }
 
   return {
     ok: false,

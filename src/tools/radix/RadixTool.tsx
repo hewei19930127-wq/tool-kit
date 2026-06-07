@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { type I18nKey, useI18n } from "@/core/i18n";
+import { resultError } from "@/core/i18n/result";
 import { convertRadix, toBinaryGroups } from "./radix";
 
 const TARGET_BASES = [2, 8, 10, 16] as const;
-const LABELS: Record<number, string> = {
-  2: "Binary",
-  8: "Octal",
-  10: "Decimal",
-  16: "Hexadecimal",
+const LABEL_KEYS: Record<number, I18nKey> = {
+  2: "tools.radix.labels.binary",
+  8: "tools.radix.labels.octal",
+  10: "tools.radix.labels.decimal",
+  16: "tools.radix.labels.hexadecimal",
 };
 
 type RadixRows =
@@ -21,6 +23,7 @@ type RadixRows =
     };
 
 export default function RadixTool() {
+  const { t } = useI18n();
   const [input, setInput] = useToolInput("radix");
   const [fromBase, setFromBase] = useState(10);
 
@@ -28,7 +31,7 @@ export default function RadixTool() {
     if (!input.trim()) return null;
 
     const decimal = convertRadix(input, fromBase, 10);
-    if (!decimal.ok) return { error: decimal.error };
+    if (!decimal.ok) return { error: resultError(decimal, t) };
 
     const value = BigInt(decimal.value);
     return {
@@ -38,24 +41,24 @@ export default function RadixTool() {
       })),
       bitwise: toBinaryGroups(value),
     };
-  }, [fromBase, input]);
+  }, [fromBase, input, t]);
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <input
-          aria-label="Number input"
+          aria-label={t("tools.radix.input")}
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Enter a number"
+          placeholder={t("tools.radix.placeholder")}
           className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         <label htmlFor="radix-source-base" className="text-sm text-muted-foreground">
-          From base
+          {t("tools.radix.fromBase")}
         </label>
         <select
           id="radix-source-base"
-          aria-label="Source base"
+          aria-label={t("tools.radix.sourceBase")}
           value={fromBase}
           onChange={(event) => setFromBase(Number(event.target.value))}
           className="rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -68,7 +71,7 @@ export default function RadixTool() {
         </select>
       </div>
 
-      {!rows && <p className="text-sm text-muted-foreground">Enter a number to see every base.</p>}
+      {!rows && <p className="text-sm text-muted-foreground">{t("tools.radix.empty")}</p>}
       {rows && "error" in rows && (
         <div role="alert" className="font-mono text-sm text-error">
           {rows.error}
@@ -79,15 +82,17 @@ export default function RadixTool() {
           {rows.values.map((row) => (
             <div key={row.base} className="flex items-baseline gap-3 border-b border-border py-2">
               <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">
-                {LABELS[row.base]}
+                {t(LABEL_KEYS[row.base])}
               </span>
-              <span aria-label={LABELS[row.base]} className="break-all font-mono text-sm">
-                {row.result.ok ? row.result.value : row.result.error}
+              <span aria-label={t(LABEL_KEYS[row.base])} className="break-all font-mono text-sm">
+                {row.result.ok ? row.result.value : resultError(row.result, t)}
               </span>
             </div>
           ))}
           <div className="flex items-baseline gap-3 py-2">
-            <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">Bitwise</span>
+            <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">
+              {t("tools.radix.labels.bitwise")}
+            </span>
             <span className="break-all font-mono text-sm">{rows.bitwise}</span>
           </div>
         </div>

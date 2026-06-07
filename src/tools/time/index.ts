@@ -5,9 +5,9 @@ import { toIso } from "./time";
 
 export const timeTool: Tool = {
   id: "time",
-  name: "Time",
+  nameKey: "tools.time.name",
   icon: Clock,
-  keywords: ["time", "timestamp", "epoch", "unix", "iso", "timezone", "时间"],
+  keywordsKey: "tools.time.keywords",
   component: TimeTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();

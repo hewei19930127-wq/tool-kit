@@ -4,8 +4,8 @@ import DiffTool from "./DiffTool";
 
 export const diffTool: Tool = {
   id: "diff",
-  name: "Diff",
+  nameKey: "tools.diff.name",
   icon: GitCompare,
-  keywords: ["diff", "compare", "merge", "change", "比较"],
+  keywordsKey: "tools.diff.keywords",
   component: DiffTool,
 };

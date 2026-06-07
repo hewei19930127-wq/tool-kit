@@ -5,9 +5,9 @@ import { validateXml } from "./xml";
 
 export const xmlTool: Tool = {
   id: "xml",
-  name: "XML",
+  nameKey: "tools.xml.name",
   icon: Code2,
-  keywords: ["xml", "format", "pretty", "minify", "validate", "格式化"],
+  keywordsKey: "tools.xml.keywords",
   component: XmlTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();

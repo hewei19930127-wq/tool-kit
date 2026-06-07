@@ -1,22 +1,27 @@
 import { Pipette } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { useI18n } from "@/core/i18n";
+import { resultError } from "@/core/i18n/result";
 import { contrastRatio, parseColor, wcagLevels } from "./color";
 import { pickColor } from "./eyedropper";
 
 function Badge({ ok, label }: { ok: boolean; label: string }) {
+  const { t } = useI18n();
+
   return (
     <span
       className={`rounded px-1.5 py-0.5 text-xs ${
         ok ? "bg-success/20 text-success" : "bg-error/20 text-error"
       }`}
     >
-      {label} {ok ? "pass" : "fail"}
+      {label} {ok ? t("tools.color.pass") : t("tools.color.fail")}
     </span>
   );
 }
 
 export default function ColorTool() {
+  const { t } = useI18n();
   const [input, setInput] = useToolInput("color");
   const [foreground, setForeground] = useState("#000000");
   const [background, setBackground] = useState("#ffffff");
@@ -35,10 +40,10 @@ export default function ColorTool() {
     <div className="flex h-full flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center gap-2">
         <input
-          aria-label="Color input"
+          aria-label={t("tools.color.input")}
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="#ff0000, rgb(...), hsl(...), or a CSS name"
+          placeholder={t("tools.color.placeholder")}
           className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         <button
@@ -47,11 +52,11 @@ export default function ColorTool() {
           className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1.5 text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Pipette className="h-4 w-4" strokeWidth={1.75} />
-          Pick
+          {t("tools.color.pick")}
         </button>
         <div
           role="img"
-          aria-label="Color swatch"
+          aria-label={t("tools.color.swatch")}
           className="h-8 w-8 rounded-md border border-border"
           style={{ background: swatch }}
         />
@@ -59,7 +64,7 @@ export default function ColorTool() {
 
       {models && !models.ok && (
         <p role="alert" className="text-sm text-error">
-          {models.error}
+          {resultError(models, t)}
         </p>
       )}
       {models?.ok && (
@@ -76,16 +81,18 @@ export default function ColorTool() {
       )}
 
       <div className="rounded-md border border-border p-3">
-        <div className="mb-2 text-xs uppercase text-muted-foreground">Contrast checker</div>
+        <div className="mb-2 text-xs uppercase text-muted-foreground">
+          {t("tools.color.contrastChecker")}
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <input
-            aria-label="Foreground"
+            aria-label={t("tools.color.foreground")}
             value={foreground}
             onChange={(event) => setForeground(event.target.value)}
             className="w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
           <input
-            aria-label="Background"
+            aria-label={t("tools.color.background")}
             value={background}
             onChange={(event) => setBackground(event.target.value)}
             className="w-28 rounded-md border border-border bg-background px-2 py-1 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -95,17 +102,17 @@ export default function ColorTool() {
           </div>
           {ratio.ok && levels && (
             <>
-              <span aria-label="Contrast ratio" className="font-mono text-sm">
+              <span aria-label={t("tools.color.contrastRatio")} className="font-mono text-sm">
                 {ratio.value.toFixed(2)}:1
               </span>
-              <Badge ok={levels.aaLarge} label="AA large" />
-              <Badge ok={levels.aa} label="AA" />
-              <Badge ok={levels.aaa} label="AAA" />
+              <Badge ok={levels.aaLarge} label={t("tools.color.aaLarge")} />
+              <Badge ok={levels.aa} label={t("tools.color.aa")} />
+              <Badge ok={levels.aaa} label={t("tools.color.aaa")} />
             </>
           )}
           {!ratio.ok && (
             <span role="alert" className="text-sm text-error">
-              {ratio.error}
+              {resultError(ratio, t)}
             </span>
           )}
         </div>

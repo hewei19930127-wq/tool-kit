@@ -4,6 +4,7 @@ import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { type I18nKey, useI18n } from "@/core/i18n";
 import {
   decodeUrlComponent,
   decodeUrlFull,
@@ -14,8 +15,17 @@ import {
 
 type Op = "encode" | "decode";
 type Scope = "component" | "full";
+const OP_LABEL_KEYS: Record<Op, I18nKey> = {
+  encode: "tools.url.actions.encode",
+  decode: "tools.url.actions.decode",
+};
+const SCOPE_LABEL_KEYS: Record<Scope, I18nKey> = {
+  component: "tools.url.scope.component",
+  full: "tools.url.scope.full",
+};
 
 export default function UrlTool() {
+  const { t } = useI18n();
   const [input, setInput] = useToolInput("url");
   const [op, setOp] = useState<Op>("encode");
   const [scope, setScope] = useState<Scope>("component");
@@ -45,7 +55,7 @@ export default function UrlTool() {
                 : "border border-border hover:bg-muted"
             }`}
           >
-            {nextOp}
+            {t(OP_LABEL_KEYS[nextOp])}
           </button>
         ))}
         <div className="h-5 w-px bg-border" />
@@ -60,7 +70,7 @@ export default function UrlTool() {
                 : "border border-border hover:bg-muted"
             }`}
           >
-            {nextScope}
+            {t(SCOPE_LABEL_KEYS[nextScope])}
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
@@ -74,21 +84,21 @@ export default function UrlTool() {
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2">
         <textarea
-          aria-label="URL input"
+          aria-label={t("tools.url.input")}
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder="Paste a URL or text..."
+          placeholder={t("tools.url.placeholder")}
           className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         <div className="flex min-h-0 flex-col gap-3">
-          <OutputPane result={result} emptyHint="Encoded/decoded output appears here." />
+          <OutputPane result={result} emptyHint={t("tools.url.empty")} />
           {query.ok && query.value.length > 0 && (
             <div className="overflow-auto rounded-md border border-border">
               <table className="w-full text-left text-sm">
                 <thead className="bg-muted text-xs uppercase text-muted-foreground">
                   <tr>
-                    <th className="px-3 py-1.5">Key</th>
-                    <th className="px-3 py-1.5">Value</th>
+                    <th className="px-3 py-1.5">{t("tools.url.table.key")}</th>
+                    <th className="px-3 py-1.5">{t("tools.url.table.value")}</th>
                   </tr>
                 </thead>
                 <tbody className="font-mono">

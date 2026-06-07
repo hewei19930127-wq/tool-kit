@@ -32,7 +32,7 @@ describe("Base64Tool", () => {
 
   it("shows an error when decoding garbage", () => {
     render(<Base64Tool />);
-    fireEvent.click(screen.getByRole("button", { name: "decode" }));
+    fireEvent.click(screen.getByRole("button", { name: "Decode" }));
     fireEvent.change(screen.getByLabelText("Base64 input"), {
       target: { value: "!!!" },
     });

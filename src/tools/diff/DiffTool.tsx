@@ -3,11 +3,22 @@ import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { type I18nKey, useI18n } from "@/core/i18n";
 import { computeDiff, type DiffMode, diffStats } from "./diff";
 
 type View = "inline" | "split";
+const MODE_LABEL_KEYS: Record<DiffMode, I18nKey> = {
+  line: "tools.diff.mode.line",
+  word: "tools.diff.mode.word",
+  char: "tools.diff.mode.char",
+};
+const VIEW_LABEL_KEYS: Record<View, I18nKey> = {
+  inline: "tools.diff.view.inline",
+  split: "tools.diff.view.split",
+};
 
 export default function DiffTool() {
+  const { t } = useI18n();
   const [a, setA] = useToolInput("diff:a");
   const [b, setB] = useToolInput("diff");
   const [mode, setMode] = useState<DiffMode>("line");
@@ -48,7 +59,7 @@ export default function DiffTool() {
                 : "border border-border hover:bg-muted"
             }`}
           >
-            {nextMode}
+            {t(MODE_LABEL_KEYS[nextMode])}
           </button>
         ))}
         <div className="h-5 w-px bg-border" />
@@ -63,10 +74,10 @@ export default function DiffTool() {
                 : "border border-border hover:bg-muted"
             }`}
           >
-            {nextView}
+            {t(VIEW_LABEL_KEYS[nextView])}
           </button>
         ))}
-        <span aria-label="Diff stats" className="ml-auto font-mono text-sm">
+        <span aria-label={t("tools.diff.stats")} className="ml-auto font-mono text-sm">
           <span className="text-success">+{stats.added}</span>{" "}
           <span className="text-error">-{stats.removed}</span>
         </span>
@@ -74,17 +85,17 @@ export default function DiffTool() {
 
       <div className="grid h-40 grid-cols-1 gap-3 md:grid-cols-2">
         <textarea
-          aria-label="Original (A)"
+          aria-label={t("tools.diff.original")}
           value={a}
           onChange={(event) => setA(event.target.value)}
-          placeholder="Original..."
+          placeholder={t("tools.diff.placeholder.original")}
           className="h-full resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         <textarea
-          aria-label="Changed (B)"
+          aria-label={t("tools.diff.changed")}
           value={b}
           onChange={(event) => setB(event.target.value)}
-          placeholder="Changed..."
+          placeholder={t("tools.diff.placeholder.changed")}
           className="h-full resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
       </div>
@@ -92,7 +103,7 @@ export default function DiffTool() {
       {view === "inline" ? (
         <pre
           role="region"
-          aria-label="Inline diff"
+          aria-label={t("tools.diff.inline")}
           className="min-h-0 flex-1 overflow-auto rounded-md border border-border bg-muted p-3 whitespace-pre-wrap font-mono text-sm leading-5"
         >
           {parts.map((part, index) =>

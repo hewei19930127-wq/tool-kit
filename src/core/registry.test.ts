@@ -3,7 +3,7 @@ import { getTool, tools } from "./registry";
 
 describe("registry", () => {
   it("contains the JSON tool", () => {
-    expect(getTool("json")?.name).toBe("JSON");
+    expect(getTool("json")?.nameKey).toBe("tools.json.name");
   });
 
   it("contains all Phase-1 tools", () => {

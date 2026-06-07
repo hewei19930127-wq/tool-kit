@@ -6,6 +6,7 @@ describe("validateXml", () => {
     expect(validateXml("<a><b/></a>")).toEqual({
       ok: true,
       value: "Well-formed",
+      valueKey: "tools.xml.messages.wellFormed",
     });
   });
 

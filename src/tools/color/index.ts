@@ -5,9 +5,9 @@ import { parseColor } from "./color";
 
 export const colorTool: Tool = {
   id: "color",
-  name: "Color",
+  nameKey: "tools.color.name",
   icon: Palette,
-  keywords: ["color", "colour", "hex", "rgb", "hsl", "contrast", "颜色"],
+  keywordsKey: "tools.color.keywords",
   component: ColorTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();

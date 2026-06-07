@@ -10,7 +10,11 @@ dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 dayjs.extend(customParseFormat);
 
-const ERR: ToolResult = { ok: false, error: "Unrecognized date/time input" };
+const ERR: ToolResult = {
+  ok: false,
+  error: "Unrecognized date/time input",
+  errorKey: "tools.time.errors.unrecognized",
+};
 
 function parse(input: string): dayjs.Dayjs | null {
   const trimmed = input.trim();
@@ -48,7 +52,12 @@ export function formatCustom(input: string, pattern: string, tz?: string): ToolR
   try {
     return { ok: true, value: (tz ? date.tz(tz) : date.utc()).format(pattern) };
   } catch {
-    return { ok: false, error: `Unknown timezone: ${tz}` };
+    return {
+      ok: false,
+      error: `Unknown timezone: ${tz}`,
+      errorKey: "tools.time.errors.unknownTimezone",
+      params: { timezone: tz ?? "" },
+    };
   }
 }
 
@@ -58,7 +67,12 @@ export function convertTimezone(input: string, tz: string): ToolResult {
   try {
     return { ok: true, value: date.tz(tz).format("YYYY-MM-DD HH:mm:ss") };
   } catch {
-    return { ok: false, error: `Unknown timezone: ${tz}` };
+    return {
+      ok: false,
+      error: `Unknown timezone: ${tz}`,
+      errorKey: "tools.time.errors.unknownTimezone",
+      params: { timezone: tz },
+    };
   }
 }
 

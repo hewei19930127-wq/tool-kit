@@ -4,9 +4,9 @@ import UrlTool from "./UrlTool";
 
 export const urlTool: Tool = {
   id: "url",
-  name: "URL",
+  nameKey: "tools.url.name",
   icon: Link,
-  keywords: ["url", "uri", "encode", "decode", "percent", "query", "参数"],
+  keywordsKey: "tools.url.keywords",
   component: UrlTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();

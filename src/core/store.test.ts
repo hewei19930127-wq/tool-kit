@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { useAppStore } from "./store";
+import { DEFAULT_LANGUAGE, useAppStore } from "./store";
 
 describe("app store", () => {
   beforeEach(() => {
@@ -7,6 +7,7 @@ describe("app store", () => {
       activeToolId: null,
       favorites: [],
       theme: "system",
+      language: DEFAULT_LANGUAGE,
       hotkey: "Alt+Space",
       toolInputs: {},
     });
@@ -26,9 +27,15 @@ describe("app store", () => {
   });
 
   it("hydrates persisted slices", () => {
-    useAppStore.getState().hydrate({ favorites: ["base64"], theme: "dark" });
+    useAppStore.getState().hydrate({ favorites: ["base64"], theme: "dark", language: "zh-CN" });
     expect(useAppStore.getState().favorites).toEqual(["base64"]);
     expect(useAppStore.getState().theme).toBe("dark");
+    expect(useAppStore.getState().language).toBe("zh-CN");
+  });
+
+  it("updates the language", () => {
+    useAppStore.getState().setLanguage("en");
+    expect(useAppStore.getState().language).toBe("en");
   });
 
   it("hydrates the hotkey", () => {

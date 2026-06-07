@@ -4,11 +4,17 @@ import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { type I18nKey, useI18n } from "@/core/i18n";
 import { decodeBase64, encodeBase64 } from "./base64";
 
 type Mode = "encode" | "decode";
+const MODE_LABEL_KEYS: Record<Mode, I18nKey> = {
+  encode: "tools.base64.actions.encode",
+  decode: "tools.base64.actions.decode",
+};
 
 export default function Base64Tool() {
+  const { t } = useI18n();
   const [input, setInput] = useToolInput("base64");
   const [mode, setMode] = useState<Mode>("encode");
   const [urlSafe, setUrlSafe] = useState(false);
@@ -33,7 +39,7 @@ export default function Base64Tool() {
                 : "border border-border hover:bg-muted"
             }`}
           >
-            {nextMode}
+            {t(MODE_LABEL_KEYS[nextMode])}
           </button>
         ))}
         <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -42,7 +48,7 @@ export default function Base64Tool() {
             checked={urlSafe}
             onChange={(event) => setUrlSafe(event.target.checked)}
           />
-          URL-safe
+          {t("tools.base64.urlSafe")}
         </label>
         <div className="ml-auto flex items-center gap-2">
           <HistoryButton entries={entries} onRestore={setInput} />
@@ -55,13 +61,17 @@ export default function Base64Tool() {
 
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2">
         <textarea
-          aria-label="Base64 input"
+          aria-label={t("tools.base64.input")}
           value={input}
           onChange={(event) => setInput(event.target.value)}
-          placeholder={mode === "encode" ? "Text to encode..." : "Base64 to decode..."}
+          placeholder={t(
+            mode === "encode"
+              ? "tools.base64.placeholder.encode"
+              : "tools.base64.placeholder.decode",
+          )}
           className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
-        <OutputPane result={result} emptyHint="Type or paste on the left to convert." />
+        <OutputPane result={result} emptyHint={t("tools.base64.empty")} />
       </div>
     </div>
   );

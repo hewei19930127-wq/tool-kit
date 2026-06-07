@@ -1,6 +1,7 @@
 import { Command as CommandPrimitive } from "cmdk";
 import * as React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useI18n } from "@/core/i18n";
 import { cn } from "@/lib/utils";
 
 export const Command = React.forwardRef<
@@ -19,10 +20,12 @@ export const Command = React.forwardRef<
 Command.displayName = CommandPrimitive.displayName;
 
 export function CommandDialog({ children, ...props }: React.ComponentProps<typeof Dialog>) {
+  const { t } = useI18n();
+
   return (
     <Dialog {...props}>
       <DialogContent className="p-0">
-        <DialogTitle className="sr-only">Command Palette</DialogTitle>
+        <DialogTitle className="sr-only">{t("app.command.title")}</DialogTitle>
         <Command>{children}</Command>
       </DialogContent>
     </Dialog>

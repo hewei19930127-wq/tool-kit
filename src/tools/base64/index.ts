@@ -5,9 +5,9 @@ import { decodeBase64 } from "./base64";
 
 export const base64Tool: Tool = {
   id: "base64",
-  name: "Base64",
+  nameKey: "tools.base64.name",
   icon: Binary,
-  keywords: ["base64", "encode", "decode", "atob", "btoa", "编码"],
+  keywordsKey: "tools.base64.keywords",
   component: Base64Tool,
   detectClipboard(text: string) {
     const trimmed = text.trim();

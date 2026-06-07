@@ -46,12 +46,21 @@ function formatInBase(value: bigint, base: number): string {
 
 export function convertRadix(input: string, fromBase: number, toBase: number): ToolResult {
   if (fromBase < 2 || fromBase > 36 || toBase < 2 || toBase > 36) {
-    return { ok: false, error: "Base must be between 2 and 36" };
+    return {
+      ok: false,
+      error: "Base must be between 2 and 36",
+      errorKey: "tools.radix.errors.baseRange",
+    };
   }
 
   const value = parseInBase(input, fromBase);
   if (value === null) {
-    return { ok: false, error: `Invalid digits for base ${fromBase}` };
+    return {
+      ok: false,
+      error: `Invalid digits for base ${fromBase}`,
+      errorKey: "tools.radix.errors.invalidDigits",
+      params: { base: fromBase },
+    };
   }
 
   return { ok: true, value: formatInBase(value, toBase) };

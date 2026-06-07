@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "@/App";
 import { type KV, setStorageBackend } from "@/core/services/storage";
-import { DEFAULT_HOTKEY, useAppStore } from "@/core/store";
+import { DEFAULT_HOTKEY, DEFAULT_LANGUAGE, useAppStore } from "@/core/store";
 
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn(() => Promise.resolve()),
@@ -38,6 +38,7 @@ describe("App", () => {
       activeToolId: "json",
       favorites: [],
       theme: "system",
+      language: DEFAULT_LANGUAGE,
       hotkey: DEFAULT_HOTKEY,
       toolInputs: {},
     });
@@ -54,5 +55,18 @@ describe("App", () => {
 
     expect(screen.queryByRole("heading", { name: "Settings" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "JSON" })).toBeInTheDocument();
+  });
+
+  it("switches visible settings labels to Simplified Chinese", async () => {
+    render(<App />);
+
+    await screen.findByText("ToolKit");
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    fireEvent.click(screen.getByRole("button", { name: "Simplified Chinese" }));
+
+    expect(screen.getByRole("heading", { name: "设置" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Language" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Simplified Chinese" })).toBeInTheDocument();
+    expect(document.documentElement.lang).toBe("zh-CN");
   });
 });

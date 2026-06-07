@@ -37,7 +37,14 @@ export async function runTransform(
   deps: RouteDeps,
 ): Promise<ToolResult> {
   const fn = TRANSFORMS[op];
-  if (!fn) return { ok: false, error: `Unknown transform: ${op}` };
+  if (!fn) {
+    return {
+      ok: false,
+      error: `Unknown transform: ${op}`,
+      errorKey: "core.transform.errors.unknown",
+      params: { operation: op },
+    };
+  }
 
   const route = deps.chooseRoute(input.length);
   if (route === "rust" && RUST_OPS.has(op)) {

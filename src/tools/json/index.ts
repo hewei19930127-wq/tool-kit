@@ -5,9 +5,9 @@ import { escapeJson, formatJson, unescapeJson } from "./json";
 
 export const jsonTool: Tool = {
   id: "json",
-  name: "JSON",
+  nameKey: "tools.json.name",
   icon: Braces,
-  keywords: ["json", "format", "pretty", "minify", "validate", "escape", "格式化"],
+  keywordsKey: "tools.json.keywords",
   component: JsonTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();
@@ -16,7 +16,7 @@ export const jsonTool: Tool = {
   commands: [
     {
       id: "escape",
-      title: "Escape to JSON string",
+      titleKey: "tools.json.commands.escape",
       run: (ctx) => {
         const result = escapeJson(ctx.input);
         if (result.ok) ctx.setInput(result.value);
@@ -24,7 +24,7 @@ export const jsonTool: Tool = {
     },
     {
       id: "unescape",
-      title: "Unescape JSON string",
+      titleKey: "tools.json.commands.unescape",
       run: (ctx) => {
         const result = unescapeJson(ctx.input);
         if (result.ok) ctx.setInput(result.value);

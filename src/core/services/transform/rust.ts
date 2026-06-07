@@ -15,7 +15,14 @@ export async function runRust(
   opts?: TransformOpts,
 ): Promise<ToolResult> {
   const cmd = RUST_CMD[op];
-  if (!cmd) return { ok: false, error: `No Rust fast-path for ${op}` };
+  if (!cmd) {
+    return {
+      ok: false,
+      error: `No Rust fast-path for ${op}`,
+      errorKey: "core.transform.errors.noRustFastPath",
+      params: { operation: op },
+    };
+  }
 
   try {
     const value = await invoke<string>(cmd, {

@@ -1,5 +1,7 @@
 import { type ReactNode, useMemo, useState } from "react";
 import { useToolInput } from "@/core/hooks/useToolInput";
+import { useI18n } from "@/core/i18n";
+import { resultError } from "@/core/i18n/result";
 import { type RegexMatch, runRegex } from "./regex";
 import { CHEATSHEET, SNIPPETS } from "./snippets";
 
@@ -28,6 +30,7 @@ function Highlighted({ text, matches }: { text: string; matches: RegexMatch[] })
 }
 
 export default function RegexTool() {
+  const { t } = useI18n();
   const [text, setText] = useToolInput("regex");
   const [pattern, setPattern] = useState("");
   const [flags, setFlags] = useState("g");
@@ -44,35 +47,38 @@ export default function RegexTool() {
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-muted-foreground">/</span>
           <input
-            aria-label="Pattern"
+            aria-label={t("tools.regex.pattern")}
             value={pattern}
             onChange={(event) => setPattern(event.target.value)}
-            placeholder="pattern"
+            placeholder={t("tools.regex.patternPlaceholder")}
             className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
           <span className="font-mono text-muted-foreground">/</span>
           <input
-            aria-label="Flags"
+            aria-label={t("tools.regex.flags")}
             value={flags}
             onChange={(event) => setFlags(event.target.value)}
             className="w-20 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
           />
-          <span aria-label="Match count" className="min-w-24 text-sm text-muted-foreground">
-            {result?.ok ? `${matches.length} matches` : ""}
+          <span
+            aria-label={t("tools.regex.matchCount")}
+            className="min-w-24 text-sm text-muted-foreground"
+          >
+            {result?.ok ? t("tools.regex.matches", { count: matches.length }) : ""}
           </span>
         </div>
 
         {result && !result.ok && (
           <div role="alert" className="font-mono text-sm text-error">
-            {result.error}
+            {resultError(result, t)}
           </div>
         )}
 
         <textarea
-          aria-label="Sample text"
+          aria-label={t("tools.regex.sampleText")}
           value={text}
           onChange={(event) => setText(event.target.value)}
-          placeholder="Sample text to test against"
+          placeholder={t("tools.regex.samplePlaceholder")}
           className="h-28 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
 
@@ -86,8 +92,8 @@ export default function RegexTool() {
               <thead className="bg-muted text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-3 py-1.5">#</th>
-                  <th className="px-3 py-1.5">Match</th>
-                  <th className="px-3 py-1.5">Groups</th>
+                  <th className="px-3 py-1.5">{t("tools.regex.table.match")}</th>
+                  <th className="px-3 py-1.5">{t("tools.regex.table.groups")}</th>
                 </tr>
               </thead>
               <tbody className="font-mono">
@@ -106,28 +112,32 @@ export default function RegexTool() {
 
       <aside className="flex max-h-full w-full shrink-0 flex-col gap-3 overflow-auto lg:w-64">
         <div>
-          <div className="mb-1 text-xs uppercase text-muted-foreground">Snippets</div>
+          <div className="mb-1 text-xs uppercase text-muted-foreground">
+            {t("tools.regex.snippets")}
+          </div>
           {SNIPPETS.map((snippet) => (
             <button
-              key={snippet.name}
+              key={snippet.nameKey}
               type="button"
               onClick={() => {
                 setPattern(snippet.pattern);
                 setFlags(snippet.flags);
               }}
-              title={snippet.description}
+              title={t(snippet.descriptionKey)}
               className="block w-full truncate rounded px-2 py-1.5 text-left text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-primary"
             >
-              {snippet.name}
+              {t(snippet.nameKey)}
             </button>
           ))}
         </div>
         <div>
-          <div className="mb-1 text-xs uppercase text-muted-foreground">Cheatsheet</div>
+          <div className="mb-1 text-xs uppercase text-muted-foreground">
+            {t("tools.regex.cheatsheet")}
+          </div>
           {CHEATSHEET.map((item) => (
             <div key={item.token} className="flex gap-2 px-2 py-1 text-xs">
               <code className="shrink-0 font-mono text-primary">{item.token}</code>
-              <span className="text-muted-foreground">{item.meaning}</span>
+              <span className="text-muted-foreground">{t(item.meaningKey)}</span>
             </div>
           ))}
         </div>

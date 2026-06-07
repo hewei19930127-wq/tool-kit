@@ -5,7 +5,7 @@ import type { ToolResult } from "@/core/types";
 
 export function describeCron(expr: string): ToolResult {
   const input = expr.trim();
-  if (!input) return { ok: false, error: "Input is empty" };
+  if (!input) return { ok: false, error: "Input is empty", errorKey: "common.errors.inputEmpty" };
 
   try {
     return {
@@ -24,7 +24,7 @@ export function nextRuns(
   tz = "UTC",
 ): ToolResult<string[]> {
   const input = expr.trim();
-  if (!input) return { ok: false, error: "Input is empty" };
+  if (!input) return { ok: false, error: "Input is empty", errorKey: "common.errors.inputEmpty" };
 
   try {
     const options: { currentDate?: Date; tz?: string } = { tz };

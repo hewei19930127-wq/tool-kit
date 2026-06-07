@@ -18,7 +18,11 @@ function decodeWith(decode: (input: string) => string, input: string): ToolResul
   try {
     return { ok: true, value: decode(input) };
   } catch {
-    return { ok: false, error: "Malformed percent-encoding" };
+    return {
+      ok: false,
+      error: "Malformed percent-encoding",
+      errorKey: "tools.url.errors.malformedPercent",
+    };
   }
 }
 
@@ -40,7 +44,9 @@ export function decodeUrlFull(input: string): ToolResult {
 
 export function parseQuery(input: string): ToolResult<QueryParam[]> {
   const trimmed = input.trim();
-  if (!trimmed) return { ok: false, error: "Input is empty" };
+  if (!trimmed) {
+    return { ok: false, error: "Input is empty", errorKey: "common.errors.inputEmpty" };
+  }
 
   try {
     let search = trimmed;
@@ -59,6 +65,10 @@ export function parseQuery(input: string): ToolResult<QueryParam[]> {
     }
     return { ok: true, value };
   } catch {
-    return { ok: false, error: "Could not parse query parameters" };
+    return {
+      ok: false,
+      error: "Could not parse query parameters",
+      errorKey: "tools.url.errors.parseQuery",
+    };
   }
 }

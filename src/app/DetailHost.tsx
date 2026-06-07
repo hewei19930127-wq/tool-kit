@@ -1,7 +1,9 @@
+import { useI18n } from "@/core/i18n";
 import { getTool } from "@/core/registry";
 import { useAppStore } from "@/core/store";
 
 export function DetailHost() {
+  const { t } = useI18n();
   const activeToolId = useAppStore((state) => state.activeToolId);
   const tool = getTool(activeToolId);
 
@@ -9,11 +11,11 @@ export function DetailHost() {
     return (
       <div className="flex h-full flex-1 items-center justify-center">
         <p className="text-sm text-muted-foreground">
-          Pick a tool from the sidebar, or press
+          {t("app.detail.emptyPrefix")}
           <kbd className="mx-1 rounded border border-border px-1.5 py-0.5 font-mono text-xs">
             ⌘K
           </kbd>
-          to search.
+          {t("app.detail.emptySuffix")}
         </p>
       </div>
     );
@@ -26,7 +28,7 @@ export function DetailHost() {
     <main className="flex h-full flex-1 flex-col">
       <header className="flex h-10 items-center gap-2 border-b border-border px-4">
         <Icon className="h-4 w-4" strokeWidth={1.75} />
-        <h1 className="text-sm font-medium">{tool.name}</h1>
+        <h1 className="text-sm font-medium">{t(tool.nameKey)}</h1>
       </header>
       <div className="min-h-0 flex-1">
         <ToolComponent />

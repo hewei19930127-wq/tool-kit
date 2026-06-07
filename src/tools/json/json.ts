@@ -37,7 +37,9 @@ function locate(message: string, input: string): { line?: number; col?: number }
 }
 
 function parse(input: string): ToolResult<unknown> {
-  if (!input.trim()) return { ok: false, error: "Input is empty" };
+  if (!input.trim()) {
+    return { ok: false, error: "Input is empty", errorKey: "common.errors.inputEmpty" };
+  }
 
   try {
     return { ok: true, value: JSON.parse(input) };
@@ -59,7 +61,9 @@ export function minifyJson(input: string): ToolResult {
 
 export function validateJson(input: string): ToolResult {
   const result = parse(input);
-  return result.ok ? { ok: true, value: "Valid JSON" } : result;
+  return result.ok
+    ? { ok: true, value: "Valid JSON", valueKey: "tools.json.messages.valid" }
+    : result;
 }
 
 export function escapeJson(input: string): ToolResult {
@@ -70,7 +74,11 @@ export function unescapeJson(input: string): ToolResult {
   const result = parse(input);
   if (!result.ok) return result;
   if (typeof result.value !== "string") {
-    return { ok: false, error: "Input is not a JSON string literal" };
+    return {
+      ok: false,
+      error: "Input is not a JSON string literal",
+      errorKey: "tools.json.errors.notStringLiteral",
+    };
   }
   return { ok: true, value: result.value };
 }

@@ -14,7 +14,12 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
   const fn = TRANSFORMS[op];
   const result: ToolResult = fn
     ? fn(input, opts)
-    : { ok: false, error: `Unknown transform: ${op}` };
+    : {
+        ok: false,
+        error: `Unknown transform: ${op}`,
+        errorKey: "core.transform.errors.unknown",
+        params: { operation: op },
+      };
 
   (self as DedicatedWorkerGlobalScope).postMessage({ id, result });
 };

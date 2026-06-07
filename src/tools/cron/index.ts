@@ -5,9 +5,9 @@ import { describeCron } from "./cron";
 
 export const cronTool: Tool = {
   id: "cron",
-  name: "Cron",
+  nameKey: "tools.cron.name",
   icon: CalendarClock,
-  keywords: ["cron", "crontab", "schedule", "job", "定时"],
+  keywordsKey: "tools.cron.keywords",
   component: CronTool,
   detectClipboard(text: string) {
     const trimmed = text.trim();

@@ -1,61 +1,63 @@
+import type { I18nKey } from "@/core/i18n";
+
 export interface RegexSnippet {
-  name: string;
+  nameKey: I18nKey;
   pattern: string;
   flags: string;
-  description: string;
+  descriptionKey: I18nKey;
 }
 
 export const SNIPPETS: RegexSnippet[] = [
   {
-    name: "Email",
+    nameKey: "tools.regex.snippet.email.name",
     pattern: "[\\w.+-]+@[\\w-]+\\.[\\w.-]+",
     flags: "g",
-    description: "Basic email address",
+    descriptionKey: "tools.regex.snippet.email.description",
   },
   {
-    name: "URL (http/https)",
+    nameKey: "tools.regex.snippet.url.name",
     pattern: "https?://[\\w.-]+(?:/[\\w./?%&=-]*)?",
     flags: "g",
-    description: "Web URL",
+    descriptionKey: "tools.regex.snippet.url.description",
   },
   {
-    name: "IPv4",
+    nameKey: "tools.regex.snippet.ipv4.name",
     pattern: "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b",
     flags: "g",
-    description: "Dotted-quad IP",
+    descriptionKey: "tools.regex.snippet.ipv4.description",
   },
   {
-    name: "ISO date",
+    nameKey: "tools.regex.snippet.isoDate.name",
     pattern: "\\d{4}-\\d{2}-\\d{2}",
     flags: "g",
-    description: "YYYY-MM-DD",
+    descriptionKey: "tools.regex.snippet.isoDate.description",
   },
   {
-    name: "Hex color",
+    nameKey: "tools.regex.snippet.hexColor.name",
     pattern: "#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\\b",
     flags: "g",
-    description: "#rgb or #rrggbb",
+    descriptionKey: "tools.regex.snippet.hexColor.description",
   },
   {
-    name: "UUID",
+    nameKey: "tools.regex.snippet.uuid.name",
     pattern: "[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}",
     flags: "gi",
-    description: "UUID v1-v5",
+    descriptionKey: "tools.regex.snippet.uuid.description",
   },
 ];
 
 export interface CheatItem {
   token: string;
-  meaning: string;
+  meaningKey: I18nKey;
 }
 
 export const CHEATSHEET: CheatItem[] = [
-  { token: "\\d \\w \\s", meaning: "digit / word char / whitespace" },
-  { token: "^ $", meaning: "start / end of line" },
-  { token: "* + ?", meaning: "0+ / 1+ / 0 or 1" },
-  { token: "{n,m}", meaning: "between n and m times" },
-  { token: "(...) (?:...)", meaning: "capture / non-capturing group" },
-  { token: "[abc] [^abc]", meaning: "set / negated set" },
-  { token: "a|b", meaning: "alternation" },
-  { token: "\\b", meaning: "word boundary" },
+  { token: "\\d \\w \\s", meaningKey: "tools.regex.cheat.charClasses" },
+  { token: "^ $", meaningKey: "tools.regex.cheat.anchors" },
+  { token: "* + ?", meaningKey: "tools.regex.cheat.quantifiers" },
+  { token: "{n,m}", meaningKey: "tools.regex.cheat.range" },
+  { token: "(...) (?:...)", meaningKey: "tools.regex.cheat.groups" },
+  { token: "[abc] [^abc]", meaningKey: "tools.regex.cheat.sets" },
+  { token: "a|b", meaningKey: "tools.regex.cheat.alternation" },
+  { token: "\\b", meaningKey: "tools.regex.cheat.boundary" },
 ];
