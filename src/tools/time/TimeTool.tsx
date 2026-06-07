@@ -26,8 +26,10 @@ function Row({
   const rowLabel = label ?? (labelKey ? t(labelKey) : "");
 
   return (
-    <div className="flex items-baseline gap-3 border-b border-border py-2">
-      <span className="w-28 shrink-0 text-xs uppercase text-muted-foreground">{rowLabel}</span>
+    <div className="grid grid-cols-[10rem_minmax(0,1fr)] items-baseline gap-3 border-b border-border py-2">
+      <span className="whitespace-nowrap text-left text-xs uppercase text-muted-foreground">
+        {rowLabel}
+      </span>
       {result.ok ? (
         <span aria-label={rowLabel} className="break-all font-mono text-sm">
           {result.value}
