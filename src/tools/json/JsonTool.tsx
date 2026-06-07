@@ -6,6 +6,7 @@ import { useHistory } from "@/core/hooks/useHistory";
 import { useToolInput } from "@/core/hooks/useToolInput";
 import { useTransform } from "@/core/hooks/useTransform";
 import { type I18nKey, useI18n } from "@/core/i18n";
+import { resultValue } from "@/core/i18n/result";
 import type { ToolResult } from "@/core/types";
 import { escapeJson, unescapeJson, validateJson } from "./json";
 
@@ -28,6 +29,7 @@ export default function JsonTool() {
   const [result, setResult] = useState<ToolResult | null>(null);
   const { entries, record } = useHistory("json");
   const { run, pending } = useTransform();
+  const copyText = result?.ok ? resultValue(result, t) : "";
 
   async function apply(action: Action) {
     const next = "op" in action ? await run(action.op, input) : action.run(input);
@@ -54,7 +56,7 @@ export default function JsonTool() {
         )}
         <div className="ml-auto flex items-center gap-2">
           <HistoryButton entries={entries} onRestore={setInput} />
-          <CopyButton text={result?.ok ? result.value : ""} />
+          <CopyButton text={copyText} />
         </div>
       </div>
 

@@ -31,6 +31,7 @@ export const en = {
 
   "components.copy.copy": "Copy",
   "components.copy.copied": "Copied",
+  "components.copy.failed": "Copy failed",
   "components.copy.output": "Copy output",
   "components.history.label": "History",
   "components.history.empty": "No history yet.",

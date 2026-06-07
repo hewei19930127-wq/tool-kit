@@ -32,8 +32,8 @@ Catch errors inside the transform, normalize the message with `toMessage()` from
 
 ## Build, Test, and Development Commands
 
-- `npm run dev`: start Vite on port `1420`; storage falls back to `localStorage`.
-- `npm run tauri dev`: run the full native app; required for hotkey, tray, and native eyedropper testing.
+- `npm run tauri dev`: default for testing app behavior; runs the full native app and is required for hotkey, tray, native storage, Rust fast-path, and native eyedropper testing.
+- `npm run dev`: lightweight frontend-only loop on Vite port `1420`; use only for browser-focused UI work where native Tauri behavior is irrelevant. Storage falls back to `localStorage`.
 - `npm run tauri build`: build the production native app bundle, including the macOS `.dmg` under `src-tauri/target/release/bundle/dmg/`.
 - `npm test`: run Vitest once in CI-style mode.
 - `npm run test:watch`: run Vitest in watch mode.
@@ -50,7 +50,7 @@ Use TypeScript, React JSX, ES modules, and the `@/*` alias for `src/*`. Keep ali
 
 ## Testing Guidelines
 
-Tests use Vitest with `jsdom`, Testing Library, and setup in `src/test/setup.ts`. Cover normal cases, invalid input, empty input, Unicode, and large payload behavior for transforms. Pure transforms must return `ToolResult` unions from `src/core/types.ts`; catch errors, normalize with `toMessage()` from `src/core/result.ts`, and do not throw into UI code.
+Use `npm run tauri dev` by default for manual verification so the tested behavior matches the macOS shell. Use `npm run dev` only for browser-only frontend checks. Automated tests use Vitest with `jsdom`, Testing Library, and setup in `src/test/setup.ts`. Cover normal cases, invalid input, empty input, Unicode, and large payload behavior for transforms. Pure transforms must return `ToolResult` unions from `src/core/types.ts`; catch errors, normalize with `toMessage()` from `src/core/result.ts`, and do not throw into UI code.
 
 ## Commit & Pull Request Guidelines
 

@@ -33,6 +33,7 @@ export const zhCN = {
 
   "components.copy.copy": "复制",
   "components.copy.copied": "已复制",
+  "components.copy.failed": "复制失败",
   "components.copy.output": "复制输出",
   "components.history.label": "历史",
   "components.history.empty": "暂无历史",

@@ -6,6 +6,7 @@ import { useHistory } from "@/core/hooks/useHistory";
 import { useToolInput } from "@/core/hooks/useToolInput";
 import { useTransform } from "@/core/hooks/useTransform";
 import { type I18nKey, useI18n } from "@/core/i18n";
+import { resultValue } from "@/core/i18n/result";
 import type { ToolResult } from "@/core/types";
 import { validateXml } from "./xml";
 
@@ -25,6 +26,7 @@ export default function XmlTool() {
   const [result, setResult] = useState<ToolResult | null>(null);
   const { entries, record } = useHistory("xml");
   const { run, pending } = useTransform();
+  const copyText = result?.ok ? resultValue(result, t) : "";
 
   async function apply(action: Action) {
     const next = "op" in action ? await run(action.op, input) : action.run(input);
@@ -49,7 +51,7 @@ export default function XmlTool() {
         {pending && <span className="text-xs text-muted-foreground">{t("tools.xml.working")}</span>}
         <div className="ml-auto flex items-center gap-2">
           <HistoryButton entries={entries} onRestore={setInput} />
-          <CopyButton text={result?.ok ? result.value : ""} />
+          <CopyButton text={copyText} />
         </div>
       </div>
 
