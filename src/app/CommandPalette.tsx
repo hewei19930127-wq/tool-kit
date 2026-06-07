@@ -11,9 +11,8 @@ import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
 import type { Tool, ToolCommand } from "@/core/types";
 
-export function CommandPalette() {
+export function CommandPalette({ onSelectTool }: { onSelectTool: (toolId: string) => void }) {
   const [open, setOpen] = useState(false);
-  const setActiveTool = useAppStore((state) => state.setActiveTool);
   const commands = useMemo(
     () => tools.flatMap((tool) => (tool.commands ?? []).map((command) => ({ command, tool }))),
     [],
@@ -31,12 +30,12 @@ export function CommandPalette() {
   }, []);
 
   const choose = (toolId: string) => {
-    setActiveTool(toolId);
+    onSelectTool(toolId);
     setOpen(false);
   };
 
   const runCommand = (tool: Tool, command: ToolCommand) => {
-    setActiveTool(tool.id);
+    onSelectTool(tool.id);
     const store = useAppStore.getState();
     command.run({
       input: store.toolInputs[tool.id] ?? "",

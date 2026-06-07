@@ -21,6 +21,11 @@ function App() {
   const { text: clipText, suggestedToolId, clear: clearClip } = useClipboardDetect();
   const suggestionName = getTool(suggestedToolId)?.name;
 
+  const selectTool = (toolId: string) => {
+    setActiveTool(toolId);
+    setSettingsOpen(false);
+  };
+
   useEffect(() => {
     Promise.all([
       storage().get<string[]>("favorites"),
@@ -65,7 +70,7 @@ function App() {
   return (
     <ThemeProvider>
       <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
-        <Sidebar onOpenSettings={() => setSettingsOpen(true)} />
+        <Sidebar onOpenSettings={() => setSettingsOpen(true)} onSelectTool={selectTool} />
         <div className="flex min-w-0 flex-1 flex-col">
           {clipText && (
             <ClipboardBanner
@@ -77,7 +82,7 @@ function App() {
               }}
               onOpenSuggestion={() => {
                 if (suggestedToolId) {
-                  setActiveTool(suggestedToolId);
+                  selectTool(suggestedToolId);
                   setToolInput(suggestedToolId, clipText);
                 }
                 clearClip();
@@ -87,7 +92,7 @@ function App() {
           )}
           {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : <DetailHost />}
         </div>
-        <CommandPalette />
+        <CommandPalette onSelectTool={selectTool} />
       </div>
     </ThemeProvider>
   );

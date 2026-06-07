@@ -2,10 +2,15 @@ import { Settings as SettingsIcon, Star } from "lucide-react";
 import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
 
-function ToolRow({ tool }: { tool: (typeof tools)[number] }) {
+function ToolRow({
+  tool,
+  onSelectTool,
+}: {
+  tool: (typeof tools)[number];
+  onSelectTool: (toolId: string) => void;
+}) {
   const active = useAppStore((state) => state.activeToolId === tool.id);
   const favorite = useAppStore((state) => state.favorites.includes(tool.id));
-  const setActiveTool = useAppStore((state) => state.setActiveTool);
   const toggleFavorite = useAppStore((state) => state.toggleFavorite);
 
   const Icon = tool.icon;
@@ -18,7 +23,7 @@ function ToolRow({ tool }: { tool: (typeof tools)[number] }) {
     >
       <button
         type="button"
-        onClick={() => setActiveTool(tool.id)}
+        onClick={() => onSelectTool(tool.id)}
         className="flex min-w-0 items-center gap-2 px-2 py-1.5 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
       >
         <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
@@ -39,7 +44,13 @@ function ToolRow({ tool }: { tool: (typeof tools)[number] }) {
   );
 }
 
-export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
+export function Sidebar({
+  onOpenSettings,
+  onSelectTool,
+}: {
+  onOpenSettings: () => void;
+  onSelectTool: (toolId: string) => void;
+}) {
   const favorites = useAppStore((state) => state.favorites);
   const pinned = tools.filter((tool) => favorites.includes(tool.id));
   const rest = tools.filter((tool) => !favorites.includes(tool.id));
@@ -53,13 +64,13 @@ export function Sidebar({ onOpenSettings }: { onOpenSettings: () => void }) {
             Favorites
           </div>
           {pinned.map((tool) => (
-            <ToolRow key={tool.id} tool={tool} />
+            <ToolRow key={tool.id} tool={tool} onSelectTool={onSelectTool} />
           ))}
           <div className="my-1 h-px bg-border" />
         </>
       )}
       {rest.map((tool) => (
-        <ToolRow key={tool.id} tool={tool} />
+        <ToolRow key={tool.id} tool={tool} onSelectTool={onSelectTool} />
       ))}
       <button
         type="button"
