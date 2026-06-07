@@ -1,4 +1,5 @@
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { isTauriRuntime } from "./runtime";
 
 export interface KV {
   get<T>(key: string): Promise<T | null>;
@@ -34,10 +35,6 @@ function browserBackend(): KV {
       window.localStorage.setItem(key, JSON.stringify(value));
     },
   };
-}
-
-function isTauriRuntime(): boolean {
-  return typeof window !== "undefined" && Reflect.has(window, "__TAURI_INTERNALS__");
 }
 
 export function storage(): KV {

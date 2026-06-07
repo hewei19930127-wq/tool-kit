@@ -1,8 +1,5 @@
 import { writeText as writeTauriText } from "@tauri-apps/plugin-clipboard-manager";
-
-function isTauriRuntime(): boolean {
-  return typeof window !== "undefined" && Reflect.has(window, "__TAURI_INTERNALS__");
-}
+import { isTauriRuntime } from "./runtime";
 
 async function writeBrowserText(text: string): Promise<void> {
   if (!navigator.clipboard?.writeText) {
@@ -20,16 +17,13 @@ export async function writeClipboardText(text: string): Promise<void> {
 
   try {
     await writeTauriText(text);
-    return;
   } catch (tauriError) {
     try {
       await writeBrowserText(text);
-      return;
     } catch {
-      // Prefer the original Tauri error because it usually carries the
+      // Surface the original Tauri error: it usually carries the
       // permission/runtime context that explains why the native write failed.
+      throw tauriError;
     }
-
-    throw tauriError;
   }
 }
