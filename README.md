@@ -14,6 +14,7 @@ npm run dev
 npm test
 npm run build
 npm run tauri dev
+npm run tauri build
 ```
 
 `npm run tauri dev` requires Rust/Cargo on `PATH`. Install Rust first with
