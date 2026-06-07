@@ -11,6 +11,16 @@
   --success: oklch(0.65 0.18 150);
   --error: oklch(0.58 0.22 25);
   --favorite: oklch(0.78 0.16 80);
+  --syntax-key: oklch(0.5 0.18 264);
+  --syntax-string: oklch(0.52 0.15 150);
+  --syntax-number: oklch(0.55 0.16 50);
+  --syntax-boolean: oklch(0.52 0.2 300);
+  --syntax-null: oklch(0.58 0.22 25);
+  --syntax-punctuation: oklch(0.55 0.02 256);
+  --syntax-tag: oklch(0.5 0.2 264);
+  --syntax-attr: oklch(0.52 0.15 200);
+  --syntax-comment: oklch(0.6 0.02 256);
+  --syntax-meta: oklch(0.55 0.12 330);
 }
 
 .dark {
@@ -24,6 +34,16 @@
   --success: oklch(0.7 0.17 150);
   --error: oklch(0.65 0.2 25);
   --favorite: oklch(0.8 0.15 80);
+  --syntax-key: oklch(0.72 0.13 264);
+  --syntax-string: oklch(0.75 0.13 150);
+  --syntax-number: oklch(0.78 0.13 60);
+  --syntax-boolean: oklch(0.74 0.15 300);
+  --syntax-null: oklch(0.7 0.18 25);
+  --syntax-punctuation: oklch(0.65 0.02 256);
+  --syntax-tag: oklch(0.72 0.14 264);
+  --syntax-attr: oklch(0.74 0.12 200);
+  --syntax-comment: oklch(0.6 0.02 256);
+  --syntax-meta: oklch(0.74 0.12 330);
 }
 
 @theme inline {
@@ -37,6 +57,16 @@
   --color-success: var(--success);
   --color-error: var(--error);
   --color-favorite: var(--favorite);
+  --color-syntax-key: var(--syntax-key);
+  --color-syntax-string: var(--syntax-string);
+  --color-syntax-number: var(--syntax-number);
+  --color-syntax-boolean: var(--syntax-boolean);
+  --color-syntax-null: var(--syntax-null);
+  --color-syntax-punctuation: var(--syntax-punctuation);
+  --color-syntax-tag: var(--syntax-tag);
+  --color-syntax-attr: var(--syntax-attr);
+  --color-syntax-comment: var(--syntax-comment);
+  --color-syntax-meta: var(--syntax-meta);
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }

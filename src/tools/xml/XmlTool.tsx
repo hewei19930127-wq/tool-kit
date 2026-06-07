@@ -61,7 +61,7 @@ export default function XmlTool() {
           placeholder={t("tools.xml.placeholder")}
           className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
-        <OutputPane result={result} emptyHint={t("tools.xml.empty")} />
+        <OutputPane result={result} emptyHint={t("tools.xml.empty")} language="xml" />
       </div>
     </div>
   );

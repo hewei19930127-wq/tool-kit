@@ -1,30 +1,40 @@
+import { HighlightedCode } from "@/components/HighlightedCode";
 import { useI18n } from "@/core/i18n";
 import { resultError, resultValue } from "@/core/i18n/result";
+import type { Language } from "@/core/services/highlight";
 import type { ToolResult } from "@/core/types";
 
 export function OutputPane({
   result,
   emptyHint,
   label,
+  language,
 }: {
   result: ToolResult | null;
   emptyHint: string;
   label?: string;
+  /** When set, render the output with syntax highlighting for this language. */
+  language?: Language;
 }) {
   const { t } = useI18n();
   const outputLabel = label ?? t("components.output.label");
 
   return (
     <div className="h-full min-h-64 overflow-auto rounded-md border border-border bg-muted p-3">
-      {result?.ok && (
-        <pre
-          role="region"
-          aria-label={outputLabel}
-          className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
-        >
-          {resultValue(result, t)}
-        </pre>
-      )}
+      {result?.ok &&
+        // Localized status messages (e.g. "Valid JSON") carry a valueKey and
+        // are not code, so they bypass syntax highlighting.
+        (language && !result.valueKey ? (
+          <HighlightedCode code={resultValue(result, t)} language={language} label={outputLabel} />
+        ) : (
+          <pre
+            role="region"
+            aria-label={outputLabel}
+            className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
+          >
+            {resultValue(result, t)}
+          </pre>
+        ))}
       {result && !result.ok && (
         <div role="alert" className="font-mono text-sm text-error">
           {resultError(result, t)}
