@@ -34,12 +34,14 @@ function App() {
       storage().get<ThemeMode>("theme"),
       storage().get<LanguagePreference>("language"),
       storage().get<string>("hotkey"),
-    ]).then(([favorites, theme, language, hotkey]) => {
+      storage().get<unknown>("diff"),
+    ]).then(([favorites, theme, language, hotkey, diff]) => {
       hydrate({
         ...(favorites ? { favorites } : {}),
         ...(theme ? { theme } : {}),
         ...(language ? { language } : {}),
         ...(hotkey ? { hotkey } : {}),
+        ...(diff ? { diff } : {}),
       });
       if (hotkey) {
         void invoke("set_hotkey", { accelerator: hotkey }).catch(() => {});
@@ -49,11 +51,12 @@ function App() {
   }, [hydrate]);
 
   useEffect(() => {
-    const unsubscribe = useAppStore.subscribe((state) => {
-      void storage().set("favorites", state.favorites);
-      void storage().set("theme", state.theme);
-      void storage().set("language", state.language);
-      void storage().set("hotkey", state.hotkey);
+    const unsubscribe = useAppStore.subscribe((state, prev) => {
+      if (state.favorites !== prev.favorites) void storage().set("favorites", state.favorites);
+      if (state.theme !== prev.theme) void storage().set("theme", state.theme);
+      if (state.language !== prev.language) void storage().set("language", state.language);
+      if (state.hotkey !== prev.hotkey) void storage().set("hotkey", state.hotkey);
+      if (state.diff !== prev.diff) void storage().set("diff", state.diff);
     });
     return unsubscribe;
   }, []);

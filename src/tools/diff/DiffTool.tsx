@@ -1,30 +1,35 @@
 import { MergeView } from "@codemirror/merge";
 import { EditorState } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useToolInput } from "@/core/hooks/useToolInput";
+import { useEffect, useMemo, useRef } from "react";
 import { type I18nKey, useI18n } from "@/core/i18n";
+import { type DiffView, useAppStore } from "@/core/store";
+import { DiffTabs } from "./DiffTabs";
 import { computeDiff, type DiffMode, diffStats } from "./diff";
 
-type View = "inline" | "split";
 const MODE_LABEL_KEYS: Record<DiffMode, I18nKey> = {
   line: "tools.diff.mode.line",
   word: "tools.diff.mode.word",
   char: "tools.diff.mode.char",
 };
-const VIEW_LABEL_KEYS: Record<View, I18nKey> = {
+const VIEW_LABEL_KEYS: Record<DiffView, I18nKey> = {
   inline: "tools.diff.view.inline",
   split: "tools.diff.view.split",
 };
 
 export default function DiffTool() {
   const { t } = useI18n();
-  const [a, setA] = useToolInput("diff:a");
-  const [b, setB] = useToolInput("diff");
-  const [mode, setMode] = useState<DiffMode>("line");
-  const [view, setView] = useState<View>("inline");
+  const active = useAppStore(
+    (state) =>
+      state.diff.tabs.find((tab) => tab.id === state.diff.activeTabId) ?? state.diff.tabs[0],
+  );
+  const mode = useAppStore((state) => state.diff.mode);
+  const view = useAppStore((state) => state.diff.view);
+  const setDiffTabSide = useAppStore((state) => state.setDiffTabSide);
+  const setDiffMode = useAppStore((state) => state.setDiffMode);
+  const setDiffView = useAppStore((state) => state.setDiffView);
 
-  const parts = useMemo(() => computeDiff(a, b, mode), [a, b, mode]);
+  const parts = useMemo(() => computeDiff(active.a, active.b, mode), [active.a, active.b, mode]);
   const stats = useMemo(() => diffStats(parts), [parts]);
 
   const mergeHost = useRef<HTMLDivElement>(null);
@@ -34,25 +39,27 @@ export default function DiffTool() {
     const mergeView = new MergeView({
       parent: mergeHost.current,
       a: {
-        doc: a,
+        doc: active.a,
         extensions: [EditorView.editable.of(false), EditorState.readOnly.of(true)],
       },
       b: {
-        doc: b,
+        doc: active.b,
         extensions: [EditorView.editable.of(false), EditorState.readOnly.of(true)],
       },
     });
     return () => mergeView.destroy();
-  }, [view, a, b]);
+  }, [view, active.a, active.b]);
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
+      <DiffTabs />
+
       <div className="flex flex-wrap items-center gap-2">
         {(["line", "word", "char"] as DiffMode[]).map((nextMode) => (
           <button
             key={nextMode}
             type="button"
-            onClick={() => setMode(nextMode)}
+            onClick={() => setDiffMode(nextMode)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               mode === nextMode
                 ? "bg-primary text-primary-foreground"
@@ -63,11 +70,11 @@ export default function DiffTool() {
           </button>
         ))}
         <div className="h-5 w-px bg-border" />
-        {(["inline", "split"] as View[]).map((nextView) => (
+        {(["inline", "split"] as DiffView[]).map((nextView) => (
           <button
             key={nextView}
             type="button"
-            onClick={() => setView(nextView)}
+            onClick={() => setDiffView(nextView)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               view === nextView
                 ? "bg-primary/10 text-primary"
@@ -86,15 +93,15 @@ export default function DiffTool() {
       <div className="grid h-40 grid-cols-1 gap-3 md:grid-cols-2">
         <textarea
           aria-label={t("tools.diff.original")}
-          value={a}
-          onChange={(event) => setA(event.target.value)}
+          value={active.a}
+          onChange={(event) => setDiffTabSide(active.id, "a", event.target.value)}
           placeholder={t("tools.diff.placeholder.original")}
           className="h-full resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
         <textarea
           aria-label={t("tools.diff.changed")}
-          value={b}
-          onChange={(event) => setB(event.target.value)}
+          value={active.b}
+          onChange={(event) => setDiffTabSide(active.id, "b", event.target.value)}
           placeholder={t("tools.diff.placeholder.changed")}
           className="h-full resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
         />
@@ -123,6 +130,8 @@ export default function DiffTool() {
       ) : (
         <div
           ref={mergeHost}
+          role="region"
+          aria-label={t("tools.diff.split")}
           className="min-h-0 flex-1 overflow-auto rounded-md border border-border"
         />
       )}
