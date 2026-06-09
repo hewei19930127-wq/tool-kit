@@ -77,4 +77,25 @@ describe("DiffTool", () => {
     expect(screen.getByLabelText("Changed (B)")).toHaveValue("second changed");
     expect(screen.getByLabelText("Inline diff").textContent).toContain("second changed");
   });
+
+  it("opens a new tab with Cmd+T and switches tabs with Cmd+number", () => {
+    render(<DiffTool />);
+    expect(screen.getAllByRole("tab")).toHaveLength(1);
+
+    fireEvent.keyDown(window, { key: "t", metaKey: true });
+    expect(screen.getAllByRole("tab")).toHaveLength(2);
+    expect(screen.getByRole("tab", { name: "Diff 2" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "1", metaKey: true });
+    expect(screen.getByRole("tab", { name: "Diff 1" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "2", metaKey: true });
+    expect(screen.getByRole("tab", { name: "Diff 2" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("leaves Cmd+K to the global command palette and does not add a tab", () => {
+    render(<DiffTool />);
+    fireEvent.keyDown(window, { key: "k", metaKey: true });
+    expect(screen.getAllByRole("tab")).toHaveLength(1);
+  });
 });

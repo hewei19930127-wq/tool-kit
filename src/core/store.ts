@@ -13,6 +13,8 @@ export interface DiffTab {
   seq: number;
   a: string;
   b: string;
+  /** User-customized tab name; falls back to the seq-based label when empty. */
+  name?: string;
 }
 
 export interface DiffSlice {
@@ -29,11 +31,15 @@ type HydrateSlice = Partial<
   diff?: unknown;
 };
 
+function makeBlankTab(seq: number): DiffTab {
+  return { id: crypto.randomUUID(), seq, a: "", b: "" };
+}
+
 export function makeDefaultDiffSlice(): DiffSlice {
-  const id = crypto.randomUUID();
+  const tab = makeBlankTab(1);
   return {
-    tabs: [{ id, seq: 1, a: "", b: "" }],
-    activeTabId: id,
+    tabs: [tab],
+    activeTabId: tab.id,
     nextSeq: 2,
     mode: "line",
     view: "split",
@@ -55,12 +61,24 @@ function isDiffTab(value: unknown): value is DiffTab {
     typeof tab.id === "string" &&
     typeof tab.seq === "number" &&
     typeof tab.a === "string" &&
-    typeof tab.b === "string"
+    typeof tab.b === "string" &&
+    (tab.name === undefined || typeof tab.name === "string")
   );
 }
 
 function nextSeqFromTabs(tabs: DiffTab[]): number {
   return tabs.reduce((largest, tab) => Math.max(largest, tab.seq), 0) + 1;
+}
+
+/**
+ * When a close operation leaves a single comparison tab, restart the numbering:
+ * the lone tab becomes "Diff 1" and the next added tab is "Diff 2" again. A
+ * custom tab name is preserved. Slices with more than one tab pass through.
+ */
+function resetNumberingWhenSingle(diff: DiffSlice): DiffSlice {
+  if (diff.tabs.length !== 1) return diff;
+  const only = { ...diff.tabs[0], seq: 1 };
+  return { ...diff, tabs: [only], activeTabId: only.id, nextSeq: 2 };
 }
 
 function normalizeDiffSlice(value: unknown): DiffSlice {
@@ -106,8 +124,12 @@ export interface AppState {
   setToolInput: (id: string, text: string) => void;
   addDiffTab: () => void;
   closeDiffTab: (id: string) => void;
+  closeOtherDiffTabs: (id: string) => void;
+  closeDiffTabsToRight: (id: string) => void;
+  closeAllDiffTabs: () => void;
   setActiveDiffTab: (id: string) => void;
   setDiffTabSide: (id: string, side: "a" | "b", text: string) => void;
+  renameDiffTab: (id: string, name: string) => void;
   setDiffMode: (mode: DiffMode) => void;
   setDiffView: (view: DiffView) => void;
   hydrate: (slice: HydrateSlice) => void;
@@ -134,13 +156,12 @@ export const useAppStore = create<AppState>((set) => ({
   setToolInput: (id, text) => set((state) => ({ toolInputs: { ...state.toolInputs, [id]: text } })),
   addDiffTab: () =>
     set((state) => {
-      const id = crypto.randomUUID();
-      const tab = { id, seq: state.diff.nextSeq, a: "", b: "" };
+      const tab = makeBlankTab(state.diff.nextSeq);
       return {
         diff: {
           ...state.diff,
           tabs: [...state.diff.tabs, tab],
-          activeTabId: id,
+          activeTabId: tab.id,
           nextSeq: state.diff.nextSeq + 1,
         },
       };
@@ -156,7 +177,45 @@ export const useAppStore = create<AppState>((set) => ({
           ? tabs[Math.max(0, closingIndex - 1)].id
           : state.diff.activeTabId;
 
-      return { diff: { ...state.diff, tabs, activeTabId } };
+      return {
+        diff: resetNumberingWhenSingle({ ...state.diff, tabs, activeTabId }),
+      };
+    }),
+  closeOtherDiffTabs: (id) =>
+    set((state) => {
+      const kept = state.diff.tabs.find((tab) => tab.id === id);
+      if (!kept || state.diff.tabs.length === 1) return {};
+      return {
+        diff: resetNumberingWhenSingle({
+          ...state.diff,
+          tabs: [kept],
+          activeTabId: kept.id,
+        }),
+      };
+    }),
+  closeDiffTabsToRight: (id) =>
+    set((state) => {
+      const index = state.diff.tabs.findIndex((tab) => tab.id === id);
+      if (index === -1 || index === state.diff.tabs.length - 1) return {};
+      const tabs = state.diff.tabs.slice(0, index + 1);
+      const activeTabId = tabs.some((tab) => tab.id === state.diff.activeTabId)
+        ? state.diff.activeTabId
+        : id;
+      return {
+        diff: resetNumberingWhenSingle({ ...state.diff, tabs, activeTabId }),
+      };
+    }),
+  closeAllDiffTabs: () =>
+    set((state) => {
+      const tab = makeBlankTab(1);
+      return {
+        diff: {
+          ...state.diff,
+          tabs: [tab],
+          activeTabId: tab.id,
+          nextSeq: 2,
+        },
+      };
     }),
   setActiveDiffTab: (id) =>
     set((state) =>
@@ -175,6 +234,19 @@ export const useAppStore = create<AppState>((set) => ({
           }
         : {},
     ),
+  renameDiffTab: (id, name) =>
+    set((state) => {
+      if (!state.diff.tabs.some((tab) => tab.id === id)) return {};
+      const trimmed = name.trim();
+      return {
+        diff: {
+          ...state.diff,
+          tabs: state.diff.tabs.map((tab) =>
+            tab.id === id ? { ...tab, name: trimmed === "" ? undefined : trimmed } : tab,
+          ),
+        },
+      };
+    }),
   setDiffMode: (mode) => set((state) => ({ diff: { ...state.diff, mode } })),
   setDiffView: (view) => set((state) => ({ diff: { ...state.diff, view } })),
   hydrate: (slice) => {

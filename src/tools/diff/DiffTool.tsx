@@ -29,6 +29,30 @@ export default function DiffTool() {
   const setDiffMode = useAppStore((state) => state.setDiffMode);
   const setDiffView = useAppStore((state) => state.setDiffView);
 
+  // Diff-only hotkeys: this listener mounts only while the Diff tool is open, so
+  // it never affects other tools. Cmd/Ctrl+T opens a new tab; Cmd/Ctrl+1-9 switch
+  // tabs. Cmd/Ctrl+K is intentionally left to the global command palette.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+      const store = useAppStore.getState();
+      if (event.key === "t") {
+        event.preventDefault();
+        store.addDiffTab();
+        return;
+      }
+      if (event.key.length === 1 && event.key >= "1" && event.key <= "9") {
+        const tab = store.diff.tabs[Number(event.key) - 1];
+        if (tab) {
+          event.preventDefault();
+          store.setActiveDiffTab(tab.id);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const parts = useMemo(() => computeDiff(active.a, active.b, mode), [active.a, active.b, mode]);
   const stats = useMemo(() => diffStats(parts), [parts]);
 
