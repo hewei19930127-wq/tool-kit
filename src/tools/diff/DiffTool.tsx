@@ -31,14 +31,36 @@ export default function DiffTool() {
 
   // Diff-only hotkeys: this listener mounts only while the Diff tool is open, so
   // it never affects other tools. Cmd/Ctrl+T opens a new tab; Cmd/Ctrl+1-9 switch
-  // tabs. Cmd/Ctrl+K is intentionally left to the global command palette.
+  // tabs; Cmd/Ctrl+Shift+[ / ] cycle to the previous/next tab (wrapping);
+  // Cmd/Ctrl+W closes the active tab (the store keeps the last tab open).
+  // Cmd/Ctrl+K is intentionally left to the global command palette.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
       const store = useAppStore.getState();
+      // event.code rather than event.key: with Shift held, key reports "{" / "}"
+      // on US layouts and other characters elsewhere.
+      if (event.shiftKey && (event.code === "BracketLeft" || event.code === "BracketRight")) {
+        const { tabs, activeTabId } = store.diff;
+        const index = tabs.findIndex((tab) => tab.id === activeTabId);
+        if (index === -1) return;
+        event.preventDefault();
+        const delta = event.code === "BracketLeft" ? -1 : 1;
+        store.setActiveDiffTab(tabs[(index + delta + tabs.length) % tabs.length].id);
+        return;
+      }
       if (event.key === "t") {
         event.preventDefault();
         store.addDiffTab();
+        return;
+      }
+      if (event.key === "w") {
+        // Only claim the shortcut when a close will actually happen, mirroring
+        // the close button that is hidden on the last remaining tab.
+        if (store.diff.tabs.length > 1) {
+          event.preventDefault();
+          store.closeDiffTab(store.diff.activeTabId);
+        }
         return;
       }
       if (event.key.length === 1 && event.key >= "1" && event.key <= "9") {

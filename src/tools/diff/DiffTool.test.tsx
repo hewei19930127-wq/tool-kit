@@ -93,6 +93,36 @@ describe("DiffTool", () => {
     expect(screen.getByRole("tab", { name: "Diff 2" })).toHaveAttribute("aria-selected", "true");
   });
 
+  it("cycles tabs with Cmd+Shift+[ and Cmd+Shift+], wrapping at the ends", () => {
+    render(<DiffTool />);
+    fireEvent.keyDown(window, { key: "t", metaKey: true });
+    fireEvent.keyDown(window, { key: "t", metaKey: true });
+    expect(screen.getByRole("tab", { name: "Diff 3" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "}", code: "BracketRight", metaKey: true, shiftKey: true });
+    expect(screen.getByRole("tab", { name: "Diff 1" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "{", code: "BracketLeft", metaKey: true, shiftKey: true });
+    expect(screen.getByRole("tab", { name: "Diff 3" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "{", code: "BracketLeft", metaKey: true, shiftKey: true });
+    expect(screen.getByRole("tab", { name: "Diff 2" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("closes the active tab with Cmd+W but keeps the last tab open", () => {
+    render(<DiffTool />);
+    fireEvent.keyDown(window, { key: "t", metaKey: true });
+    expect(screen.getAllByRole("tab")).toHaveLength(2);
+    expect(screen.getByRole("tab", { name: "Diff 2" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "w", metaKey: true });
+    expect(screen.getAllByRole("tab")).toHaveLength(1);
+    expect(screen.getByRole("tab", { name: "Diff 1" })).toHaveAttribute("aria-selected", "true");
+
+    fireEvent.keyDown(window, { key: "w", metaKey: true });
+    expect(screen.getAllByRole("tab")).toHaveLength(1);
+  });
+
   it("leaves Cmd+K to the global command palette and does not add a tab", () => {
     render(<DiffTool />);
     fireEvent.keyDown(window, { key: "k", metaKey: true });
