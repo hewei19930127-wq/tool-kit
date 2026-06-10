@@ -35,8 +35,8 @@ export default function Base64Tool() {
             onClick={() => setMode(nextMode)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               mode === nextMode
-                ? "bg-primary text-primary-foreground"
-                : "border border-border hover:bg-muted"
+                ? "border border-primary/45 bg-primary/10 font-medium text-primary"
+                : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             {t(MODE_LABEL_KEYS[nextMode])}
@@ -69,7 +69,7 @@ export default function Base64Tool() {
               ? "tools.base64.placeholder.encode"
               : "tools.base64.placeholder.decode",
           )}
-          className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-full min-h-64 resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <OutputPane result={result} emptyHint={t("tools.base64.empty")} />
       </div>

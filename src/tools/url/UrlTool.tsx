@@ -51,8 +51,8 @@ export default function UrlTool() {
             onClick={() => setOp(nextOp)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               op === nextOp
-                ? "bg-primary text-primary-foreground"
-                : "border border-border hover:bg-muted"
+                ? "border border-primary/45 bg-primary/10 font-medium text-primary"
+                : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             {t(OP_LABEL_KEYS[nextOp])}
@@ -66,8 +66,8 @@ export default function UrlTool() {
             onClick={() => setScope(nextScope)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               scope === nextScope
-                ? "bg-primary/10 text-primary"
-                : "border border-border hover:bg-muted"
+                ? "border border-primary/45 bg-primary/10 font-medium text-primary"
+                : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             {t(SCOPE_LABEL_KEYS[nextScope])}
@@ -88,7 +88,7 @@ export default function UrlTool() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder={t("tools.url.placeholder")}
-          className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-full min-h-64 resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <div className="flex min-h-0 flex-col gap-3">
           <OutputPane result={result} emptyHint={t("tools.url.empty")} />

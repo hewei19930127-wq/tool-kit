@@ -136,7 +136,7 @@ export function DiffTabs() {
                   cancelRename();
                 }
               }}
-              className="h-8 min-w-20 shrink-0 rounded-md border border-primary bg-background px-3 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="h-8 min-w-20 shrink-0 rounded-md border border-primary/40 bg-surface px-3 text-sm font-medium outline-none"
             />
           );
         }
@@ -145,7 +145,9 @@ export function DiffTabs() {
           <div
             key={tab.id}
             className={`flex h-8 shrink-0 items-center overflow-hidden rounded-md border ${
-              active ? "border-primary bg-primary/10 text-primary" : "border-border hover:bg-muted"
+              active
+                ? "border-primary/45 bg-primary/10 text-primary"
+                : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             <button
@@ -197,7 +199,7 @@ export function DiffTabs() {
             left: Math.max(8, Math.min(menu.x, window.innerWidth - MENU_WIDTH)),
             top: Math.max(8, Math.min(menu.y, window.innerHeight - MENU_HEIGHT)),
           }}
-          className="fixed z-50 min-w-52 rounded-md border border-border bg-background p-1 shadow-md"
+          className="fixed z-50 min-w-52 rounded-md border border-border bg-surface p-1 shadow-md"
         >
           {menuItem("tools.diff.tab.rename", () => startRename(menuTab.id, menuTab.name))}
           <div className="my-1 h-px bg-border" />

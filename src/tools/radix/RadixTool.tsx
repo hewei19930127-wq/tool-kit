@@ -51,7 +51,7 @@ export default function RadixTool() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder={t("tools.radix.placeholder")}
-          className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-sm outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <label htmlFor="radix-source-base" className="text-sm text-muted-foreground">
           {t("tools.radix.fromBase")}
@@ -61,7 +61,7 @@ export default function RadixTool() {
           aria-label={t("tools.radix.sourceBase")}
           value={fromBase}
           onChange={(event) => setFromBase(Number(event.target.value))}
-          className="rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="rounded-md border border-border bg-surface px-2 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           {Array.from({ length: 35 }, (_, index) => index + 2).map((base) => (
             <option key={base} value={base}>

@@ -20,7 +20,7 @@ export function OutputPane({
   const outputLabel = label ?? t("components.output.label");
 
   return (
-    <div className="h-full min-h-64 overflow-auto rounded-md border border-border bg-muted p-3">
+    <div className="h-full min-h-64 overflow-auto rounded-lg border border-border bg-muted/60 p-3">
       {result?.ok &&
         // Localized status messages (e.g. "Valid JSON") carry a valueKey and
         // are not code, so they bypass syntax highlighting.

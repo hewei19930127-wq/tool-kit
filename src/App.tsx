@@ -20,6 +20,7 @@ function App() {
   const setToolInput = useAppStore((state) => state.setToolInput);
   const [ready, setReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const { text: clipText, suggestedToolId, clear: clearClip } = useClipboardDetect();
   const suggestedTool = getTool(suggestedToolId);
 
@@ -63,9 +64,13 @@ function App() {
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "," && (event.metaKey || event.ctrlKey)) {
+      if (!(event.metaKey || event.ctrlKey)) return;
+      if (event.key === ",") {
         event.preventDefault();
         setSettingsOpen(true);
+      } else if (event.key === "k") {
+        event.preventDefault();
+        setPaletteOpen((current) => !current);
       }
     };
 
@@ -79,7 +84,11 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
-          <Sidebar onOpenSettings={() => setSettingsOpen(true)} onSelectTool={selectTool} />
+          <Sidebar
+            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenPalette={() => setPaletteOpen(true)}
+            onSelectTool={selectTool}
+          />
           <div className="flex min-w-0 flex-1 flex-col">
             {clipText && (
               <ClipboardBanner
@@ -101,7 +110,11 @@ function App() {
             )}
             {settingsOpen ? <Settings onClose={() => setSettingsOpen(false)} /> : <DetailHost />}
           </div>
-          <CommandPalette onSelectTool={selectTool} />
+          <CommandPalette
+            open={paletteOpen}
+            onOpenChange={setPaletteOpen}
+            onSelectTool={selectTool}
+          />
         </div>
       </LanguageProvider>
     </ThemeProvider>

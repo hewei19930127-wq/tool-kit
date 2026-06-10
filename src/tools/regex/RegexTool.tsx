@@ -51,14 +51,14 @@ export default function RegexTool() {
             value={pattern}
             onChange={(event) => setPattern(event.target.value)}
             placeholder={t("tools.regex.patternPlaceholder")}
-            className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="min-w-0 flex-1 rounded-md border border-border bg-surface px-2 py-1.5 font-mono text-sm outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
           />
           <span className="font-mono text-muted-foreground">/</span>
           <input
             aria-label={t("tools.regex.flags")}
             value={flags}
             onChange={(event) => setFlags(event.target.value)}
-            className="w-20 rounded-md border border-border bg-background px-2 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-20 rounded-md border border-border bg-surface px-2 py-1.5 font-mono text-sm outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
           />
           <span
             aria-label={t("tools.regex.matchCount")}
@@ -79,7 +79,7 @@ export default function RegexTool() {
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder={t("tools.regex.samplePlaceholder")}
-          className="h-28 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-28 resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
 
         <div className="min-h-32 flex-1 overflow-auto rounded-md border border-border bg-muted p-3 font-mono text-sm whitespace-pre-wrap">

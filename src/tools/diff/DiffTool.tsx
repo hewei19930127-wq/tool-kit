@@ -108,8 +108,8 @@ export default function DiffTool() {
             onClick={() => setDiffMode(nextMode)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               mode === nextMode
-                ? "bg-primary text-primary-foreground"
-                : "border border-border hover:bg-muted"
+                ? "border border-primary/45 bg-primary/10 font-medium text-primary"
+                : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             {t(MODE_LABEL_KEYS[nextMode])}
@@ -123,8 +123,8 @@ export default function DiffTool() {
             onClick={() => setDiffView(nextView)}
             className={`rounded-md px-3 py-1.5 text-sm capitalize outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               view === nextView
-                ? "bg-primary/10 text-primary"
-                : "border border-border hover:bg-muted"
+                ? "border border-primary/45 bg-primary/10 font-medium text-primary"
+                : "border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             {t(VIEW_LABEL_KEYS[nextView])}
@@ -142,14 +142,14 @@ export default function DiffTool() {
           value={active.a}
           onChange={(event) => setDiffTabSide(active.id, "a", event.target.value)}
           placeholder={t("tools.diff.placeholder.original")}
-          className="h-full resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-full resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <textarea
           aria-label={t("tools.diff.changed")}
           value={active.b}
           onChange={(event) => setDiffTabSide(active.id, "b", event.target.value)}
           placeholder={t("tools.diff.placeholder.changed")}
-          className="h-full resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-full resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
       </div>
 
@@ -178,7 +178,7 @@ export default function DiffTool() {
           ref={mergeHost}
           role="region"
           aria-label={t("tools.diff.split")}
-          className="min-h-0 flex-1 overflow-auto rounded-md border border-border"
+          className="min-h-0 flex-1 overflow-auto"
         />
       )}
     </div>

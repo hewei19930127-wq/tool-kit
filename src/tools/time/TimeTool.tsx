@@ -70,12 +70,12 @@ export default function TimeTool() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder={t("tools.time.placeholder")}
-          className="min-w-72 flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="min-w-72 flex-1 rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-sm outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <button
           type="button"
           onClick={() => setInput(String(Math.floor(Date.now() / 1000)))}
-          className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary"
+          className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium shadow-xs outline-none transition-colors hover:border-primary/50 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary"
         >
           {t("tools.time.now")}
         </button>
@@ -95,14 +95,14 @@ export default function TimeTool() {
               value={pattern}
               onChange={(event) => setPattern(event.target.value)}
               aria-label={t("tools.time.formatPattern")}
-              className="w-56 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-56 rounded-md border border-border bg-surface px-2 py-1 font-mono text-xs outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
             />
             <input
               value={tz}
               onChange={(event) => setTz(event.target.value)}
               aria-label={t("tools.time.timezone")}
               placeholder={t("tools.time.timezonePlaceholder")}
-              className="w-56 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-56 rounded-md border border-border bg-surface px-2 py-1 font-mono text-xs outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
             />
           </div>
           <Row

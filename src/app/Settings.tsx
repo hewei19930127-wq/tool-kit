@@ -44,8 +44,11 @@ export function Settings({ onClose }: { onClose: () => void }) {
 
   return (
     <main className="flex h-full flex-1 flex-col">
-      <header className="flex h-12 items-center justify-between border-b border-border px-4">
-        <h1 className="text-sm font-medium">{t("app.settings.title")}</h1>
+      <header
+        data-tauri-drag-region="deep"
+        className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4"
+      >
+        <h1 className="text-sm font-semibold tracking-tight">{t("app.settings.title")}</h1>
         <button
           type="button"
           aria-label={t("app.settings.close")}
@@ -56,25 +59,25 @@ export function Settings({ onClose }: { onClose: () => void }) {
         </button>
       </header>
 
-      <div className="flex max-w-2xl flex-col gap-8 p-6">
-        <section className="flex flex-col gap-3">
+      <div className="flex max-w-2xl flex-col gap-5 overflow-y-auto p-6">
+        <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xs">
           <div>
-            <h2 className="text-sm font-medium">{t("app.settings.appearance")}</h2>
-            <p className="text-xs text-muted-foreground">{t("app.settings.theme")}</p>
+            <h2 className="text-sm font-semibold">{t("app.settings.appearance")}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("app.settings.theme")}</p>
           </div>
           <fieldset
             aria-label={t("app.settings.theme")}
-            className="inline-flex w-fit rounded-md border border-border p-1"
+            className="inline-flex w-fit rounded-lg bg-muted p-1"
           >
             {THEMES.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setTheme(item)}
-                className={`rounded px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`rounded-md px-3 py-1 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
                   theme === item
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-surface font-medium text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t(THEME_LABEL_KEYS[item])}
@@ -82,19 +85,16 @@ export function Settings({ onClose }: { onClose: () => void }) {
             ))}
           </fieldset>
           <p className="text-xs text-muted-foreground">Language</p>
-          <fieldset
-            aria-label="Language"
-            className="inline-flex w-fit rounded-md border border-border p-1"
-          >
+          <fieldset aria-label="Language" className="inline-flex w-fit rounded-lg bg-muted p-1">
             {LANGUAGES.map((item) => (
               <button
                 key={item}
                 type="button"
                 onClick={() => setLanguage(item)}
-                className={`rounded px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                className={`rounded-md px-3 py-1 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-primary ${
                   language === item
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-surface font-medium text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {LANGUAGE_LABELS[item]}
@@ -103,10 +103,10 @@ export function Settings({ onClose }: { onClose: () => void }) {
           </fieldset>
         </section>
 
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xs">
           <div>
-            <h2 className="text-sm font-medium">{t("app.settings.globalHotkey")}</h2>
-            <p className="text-xs text-muted-foreground">{t("app.settings.windowToggle")}</p>
+            <h2 className="text-sm font-semibold">{t("app.settings.globalHotkey")}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">{t("app.settings.windowToggle")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <input
@@ -117,12 +117,12 @@ export function Settings({ onClose }: { onClose: () => void }) {
                 setStatus(null);
               }}
               placeholder="Alt+Space"
-              className="w-72 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="w-72 rounded-lg border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
             />
             <button
               type="button"
               onClick={applyHotkey}
-              className="flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary"
+              className="flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm outline-none transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-primary"
             >
               <Check className="h-4 w-4" strokeWidth={1.75} />
               {t("app.settings.apply")}

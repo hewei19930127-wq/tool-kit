@@ -1,53 +1,63 @@
 @import "tailwindcss";
 
+/*
+ * "Clay & Paper" palette — warm paper neutrals with a terracotta accent.
+ * Three surface layers: --sidebar (recessed) < --background (canvas) < --surface (raised).
+ */
 :root {
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.21 0.03 256);
-  --muted: oklch(0.96 0.01 256);
-  --muted-foreground: oklch(0.55 0.02 256);
-  --border: oklch(0.92 0.01 256);
-  --primary: oklch(0.55 0.21 257);
-  --primary-foreground: oklch(0.99 0 0);
-  --success: oklch(0.65 0.18 150);
-  --error: oklch(0.58 0.22 25);
-  --favorite: oklch(0.78 0.16 80);
-  --syntax-key: oklch(0.5 0.18 264);
-  --syntax-string: oklch(0.52 0.15 150);
-  --syntax-number: oklch(0.55 0.16 50);
-  --syntax-boolean: oklch(0.52 0.2 300);
-  --syntax-null: oklch(0.58 0.22 25);
-  --syntax-punctuation: oklch(0.55 0.02 256);
-  --syntax-tag: oklch(0.5 0.2 264);
-  --syntax-attr: oklch(0.52 0.15 200);
-  --syntax-comment: oklch(0.6 0.02 256);
-  --syntax-meta: oklch(0.55 0.12 330);
+  --background: oklch(0.974 0.007 84);
+  --surface: oklch(0.995 0.002 84);
+  --sidebar: oklch(0.948 0.009 84);
+  --foreground: oklch(0.27 0.018 55);
+  --muted: oklch(0.93 0.01 84);
+  --muted-foreground: oklch(0.5 0.022 70);
+  --border: oklch(0.885 0.012 80);
+  --primary: oklch(0.59 0.145 40);
+  --primary-foreground: oklch(0.99 0.004 84);
+  --success: oklch(0.58 0.14 150);
+  --error: oklch(0.55 0.19 28);
+  --favorite: oklch(0.72 0.14 70);
+  --syntax-key: oklch(0.5 0.12 35);
+  --syntax-string: oklch(0.52 0.11 145);
+  --syntax-number: oklch(0.55 0.12 65);
+  --syntax-boolean: oklch(0.52 0.14 310);
+  --syntax-null: oklch(0.55 0.19 28);
+  --syntax-punctuation: oklch(0.5 0.022 70);
+  --syntax-tag: oklch(0.5 0.12 35);
+  --syntax-attr: oklch(0.52 0.1 200);
+  --syntax-comment: oklch(0.58 0.02 80);
+  --syntax-meta: oklch(0.55 0.1 330);
 }
 
 .dark {
-  --background: oklch(0.18 0.02 256);
-  --foreground: oklch(0.95 0.01 256);
-  --muted: oklch(0.25 0.02 256);
-  --muted-foreground: oklch(0.65 0.02 256);
-  --border: oklch(0.3 0.02 256);
-  --primary: oklch(0.62 0.19 257);
-  --primary-foreground: oklch(0.15 0.02 256);
-  --success: oklch(0.7 0.17 150);
-  --error: oklch(0.65 0.2 25);
-  --favorite: oklch(0.8 0.15 80);
-  --syntax-key: oklch(0.72 0.13 264);
-  --syntax-string: oklch(0.75 0.13 150);
-  --syntax-number: oklch(0.78 0.13 60);
-  --syntax-boolean: oklch(0.74 0.15 300);
-  --syntax-null: oklch(0.7 0.18 25);
-  --syntax-punctuation: oklch(0.65 0.02 256);
-  --syntax-tag: oklch(0.72 0.14 264);
-  --syntax-attr: oklch(0.74 0.12 200);
-  --syntax-comment: oklch(0.6 0.02 256);
-  --syntax-meta: oklch(0.74 0.12 330);
+  --background: oklch(0.235 0.006 80);
+  --surface: oklch(0.272 0.007 80);
+  --sidebar: oklch(0.205 0.006 80);
+  --foreground: oklch(0.93 0.008 84);
+  --muted: oklch(0.3 0.008 80);
+  --muted-foreground: oklch(0.67 0.015 80);
+  --border: oklch(0.33 0.01 80);
+  --primary: oklch(0.68 0.14 42);
+  --primary-foreground: oklch(0.985 0.004 84);
+  --success: oklch(0.72 0.13 150);
+  --error: oklch(0.68 0.17 28);
+  --favorite: oklch(0.8 0.13 75);
+  --syntax-key: oklch(0.78 0.1 45);
+  --syntax-string: oklch(0.76 0.1 145);
+  --syntax-number: oklch(0.79 0.11 70);
+  --syntax-boolean: oklch(0.76 0.11 310);
+  --syntax-null: oklch(0.7 0.15 28);
+  --syntax-punctuation: oklch(0.62 0.015 80);
+  --syntax-tag: oklch(0.78 0.1 45);
+  --syntax-attr: oklch(0.76 0.09 200);
+  --syntax-comment: oklch(0.58 0.015 80);
+  --syntax-meta: oklch(0.75 0.1 330);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-sidebar: var(--sidebar);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -68,7 +78,8 @@
   --color-syntax-comment: var(--syntax-comment);
   --color-syntax-meta: var(--syntax-meta);
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "New York", "Iowan Old Style", Palatino, ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 html,
@@ -96,8 +107,66 @@ button {
   cursor: default;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary);
+}
+
+kbd {
+  font-family: var(--font-mono);
+}
+
 ::selection {
   background: color-mix(in oklch, var(--primary) 22%, transparent);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: color-mix(in oklch, var(--foreground) 22%, transparent);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklch, var(--foreground) 35%, transparent);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Diff tool split view: detach the two CodeMirror panes into separate cards. */
+.cm-mergeView {
+  height: 100%;
+  background: transparent;
+}
+
+.cm-mergeView .cm-mergeViewEditors {
+  gap: 0.75rem;
+  background: transparent;
+}
+
+.cm-mergeView .cm-mergeViewEditor {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.cm-mergeView .cm-editor {
+  height: 100%;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.cm-mergeView .cm-editor.cm-focused {
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

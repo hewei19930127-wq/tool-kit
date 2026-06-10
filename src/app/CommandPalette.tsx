@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,28 +12,24 @@ import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
 import type { Tool, ToolCommand } from "@/core/types";
 
-export function CommandPalette({ onSelectTool }: { onSelectTool: (toolId: string) => void }) {
+export function CommandPalette({
+  open,
+  onOpenChange,
+  onSelectTool,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelectTool: (toolId: string) => void;
+}) {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
   const commands = useMemo(
     () => tools.flatMap((tool) => (tool.commands ?? []).map((command) => ({ command, tool }))),
     [],
   );
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        setOpen((current) => !current);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
   const choose = (toolId: string) => {
     onSelectTool(toolId);
-    setOpen(false);
+    onOpenChange(false);
   };
 
   const runCommand = (tool: Tool, command: ToolCommand) => {
@@ -43,11 +39,11 @@ export function CommandPalette({ onSelectTool }: { onSelectTool: (toolId: string
       input: store.toolInputs[tool.id] ?? "",
       setInput: (text: string) => store.setToolInput(tool.id, text),
     });
-    setOpen(false);
+    onOpenChange(false);
   };
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={open} onOpenChange={onOpenChange}>
       <CommandInput placeholder={t("app.command.placeholder")} />
       <CommandList>
         <CommandEmpty>{t("app.command.empty")}</CommandEmpty>

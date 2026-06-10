@@ -46,7 +46,7 @@ export default function JsonTool() {
             type="button"
             onClick={() => void apply(action)}
             disabled={pending}
-            className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
+            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium shadow-xs outline-none transition-colors hover:border-primary/50 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
           >
             {t(action.labelKey)}
           </button>
@@ -66,7 +66,7 @@ export default function JsonTool() {
           value={input}
           onChange={(event) => setInput(event.target.value)}
           placeholder={t("tools.json.placeholder")}
-          className="h-full min-h-64 resize-none rounded-md border border-border bg-background p-3 font-mono text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="h-full min-h-64 resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
         <OutputPane result={result} emptyHint={t("tools.json.empty")} language="json" />
       </div>

@@ -44,7 +44,7 @@ export default function CronTool() {
         value={input}
         onChange={(event) => setInput(event.target.value)}
         placeholder={t("tools.cron.placeholder")}
-        className="rounded-md border border-border bg-background px-3 py-1.5 font-mono text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        className="rounded-md border border-border bg-surface px-3 py-1.5 font-mono text-sm outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
       />
 
       {description?.ok && (
