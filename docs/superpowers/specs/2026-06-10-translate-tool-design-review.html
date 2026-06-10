@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>审查报告 — Translate Tool Design Spec (2026-06-10)</title>
+    <style>
+      :root {
+        --bg: #faf8f5;
+        --surface: #ffffff;
+        --text: #2b2826;
+        --muted: #6b6560;
+        --border: #e5e0d8;
+        --high: #c0392b;
+        --mid: #b9770e;
+        --low: #1e8449;
+        --code-bg: #f1ede6;
+        --accent: #4a6fa5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, "PingFang SC", "Helvetica Neue", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 2rem 1rem;
+        line-height: 1.7;
+        font-size: 15px;
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0 0 0.25rem;
+      }
+      h2 {
+        font-size: 1.15rem;
+        margin: 2.5rem 0 1rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 2px solid var(--border);
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
+      }
+      .verdict {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin: 1.5rem 0;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        background: var(--code-bg);
+        font-weight: 600;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.1rem 1.4rem;
+        margin: 1rem 0;
+      }
+      .card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.1rem 0.5rem;
+        border-radius: 99px;
+        color: #fff;
+        vertical-align: 2px;
+        margin-right: 0.5rem;
+      }
+      .b-high {
+        background: var(--high);
+      }
+      .b-mid {
+        background: var(--mid);
+      }
+      .b-low {
+        background: var(--low);
+      }
+      .loc {
+        color: var(--muted);
+        font-size: 0.82rem;
+        margin-bottom: 0.6rem;
+      }
+      code {
+        background: var(--code-bg);
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+        font-size: 0.85em;
+        font-family: "SF Mono", Menlo, monospace;
+      }
+      pre {
+        background: var(--code-bg);
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+      }
+      .label {
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .walkthrough {
+        border-left: 3px solid var(--border);
+        padding-left: 1rem;
+        margin: 0.6rem 0;
+        color: #44403c;
+      }
+      ul {
+        padding-left: 1.3rem;
+      }
+      li {
+        margin: 0.25rem 0;
+      }
+      .footnote {
+        color: var(--muted);
+        font-size: 0.82rem;
+        margin-top: 2.5rem;
+        border-top: 1px solid var(--border);
+        padding-top: 1rem;
+      }
+      a {
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>审查报告 — Translate Tool Design Spec</h1>
+      <div class="meta">
+        审查对象：<code>docs/superpowers/specs/2026-06-10-translate-tool-design.md</code>（行号引用以该文件为准）<br />
+        审查日期：2026-06-10 · 所有涉及现有代码的断言均已在仓库中核实
+      </div>
+
+      <div class="verdict">
+        <strong>总体评价：</strong>spec
+        整体质量较高——范围收敛、决策有据、错误处理和测试覆盖都想得比较细。
+        但存在 <strong>3 个高优先级设计冲突</strong>（Smart flip 与 Swap
+        的组合会产生错误的语言状态、长输入截断被当作成功、简繁映射缺失），
+        以及若干前后矛盾和未定义边界。建议在进入 plan
+        阶段前先修订这几处，否则实现时必然要回头改 spec。
+      </div>
+
+      <h2>问题总览</h2>
+      <table>
+        <tr>
+          <th style="width: 3rem">#</th>
+          <th style="width: 4.5rem">级别</th>
+          <th>问题</th>
+          <th style="width: 11rem">位置</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td><span class="badge b-high">高</span></td>
+          <td>Smart flip 与 Swap 组合后语言选择器与实际内容脱节</td>
+          <td>L60–64 / L74–78</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><span class="badge b-high">高</span></td>
+          <td>
+            不设 max_tokens + 忽略 finish_reason → 长译文静默截断被记为"成功"
+          </td>
+          <td>L29 / L134–135 / L152–155 / L92–93</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><span class="badge b-high">高</span></td>
+          <td>启发式只报 "Chinese"，但语言表区分简繁 —— Swap 的映射未定义</td>
+          <td>L70–73 / L74–78 / L50–56</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>"Display-only" 的措辞与 Swap 对启发式的功能性依赖自相矛盾</td>
+          <td>L73 vs L76</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>
+            30 秒首字节超时与长输入/慢端点冲突；"valid SSE chunk" 的范围未定义
+          </td>
+          <td>L224–225 / L29</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>source = target 是否允许未定义（Polish 显式同语种是合理诉求）</td>
+          <td>L63–69</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>Swap 的边界未定义：无上次译文时的行为、当前输入被覆盖丢弃</td>
+          <td>L74–78</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>流式期间允许编辑输入但禁用 Clear —— 防护不完整且动机未说明</td>
+          <td>L83–84 / L86–87</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>partial output 与 inline error 如何同屏渲染未定义</td>
+          <td>L214–215 / L224–226</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>
+            "Persistence" 措辞误导：<code>useToolInput</code> 实际不跨重启持久化
+          </td>
+          <td>L96–97</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>
+            i18n 矛盾：Auto-detect 标签和 detected
+            类别名需要本地化，却被归为常量
+          </td>
+          <td>L201–204 / L70–73</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td><span class="badge b-mid">中</span></td>
+          <td>normalize 对空字符串 model 的行为未定义（空 model 必然 400）</td>
+          <td>L180–184</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td><span class="badge b-low">低</span></td>
+          <td>
+            事实错误：<code>__TAURI_INTERNALS__</code> 检测在
+            <code>runtime.ts</code>，不在 <code>storage.ts</code>
+          </td>
+          <td>L129</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td><span class="badge b-low">低</span></td>
+          <td>
+            capability
+            <code>https://**</code> 与"只访问用户配置端点"的承诺存在差距
+          </td>
+          <td>L13–15 / L193–197 / L248–250</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td><span class="badge b-low">低</span></td>
+          <td><code>pushHistory</code> 按 input 去重的副作用未提及</td>
+          <td>L92–95</td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td><span class="badge b-low">低</span></td>
+          <td>⌘↵ 在流式期间的行为、完成后 footer 状态未定义</td>
+          <td>L79–81 / L44–46</td>
+        </tr>
+        <tr>
+          <td>17</td>
+          <td><span class="badge b-low">低</span></td>
+          <td>顶栏 6 项 style 分段控件在窄窗口下的布局风险</td>
+          <td>L36–38 / L30</td>
+        </tr>
+      </table>
+
+      <h2>高优先级</h2>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-high">高</span>1. Smart flip 与 Swap
+          组合后，语言选择器与实际内容脱节
+        </h3>
+        <div class="loc">
+          位置：Behavior「Smart flip」（L60–64）×「Swap」（L74–78）
+        </div>
+        <p>
+          Smart flip 由<strong>模型</strong>在 prompt 内决定，发生与否 UI
+          无从得知；而 Swap
+          基于<strong>当前选择器</strong>交换语言并把上次译文搬进输入框。两者组合会产生错误状态：
+        </p>
+        <div class="walkthrough">
+          <strong>走查：</strong
+          >source=Auto，target=English，用户输入英文。模型触发 smart
+          flip，输出<strong>简体中文</strong>译文。 此时点 Swap：①
+          输入框被填入中文译文；② 新 source = 旧 target = English；③ 源是
+          Auto，按规则用启发式检测结果——检测的是<strong>原英文输入</strong>，Latin
+          → English，所以新 target = English。 最终状态：<strong
+            >source=English / target=English / 输入框是中文</strong
+          >——三处全错。
+        </div>
+        <p><span class="label">建议</span>（三选一，写进 spec）：</p>
+        <ul>
+          <li>
+            <strong>方案 A（推荐）：</strong>把 flip
+            判定从模型挪到客户端——用脚本启发式判断"输入语言 ≈
+            target"后由客户端改写 prompt 中的实际 target，并在 UI
+            上反映真实方向（如目标选择器旁显示流向提示）。zh↔en 主场景下
+            Chinese/Latin 的区分足够可靠，且 UI 永远知道真实方向，Swap
+            自然正确。
+          </li>
+          <li>
+            <strong>方案 B：</strong>保留模型 flip，但 Swap
+            不再依赖选择器，而是对<strong>上次输出</strong>跑同一个启发式来确定新
+            source，对应推导新 target。
+          </li>
+          <li>
+            <strong>方案 C（最小代价）：</strong>v1 规定：上一次 run 的 source
+            为 Auto 时，Swap 只交换语言、不搬运文本（或直接禁用），并在 spec
+            写明这是已知限制。
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-high">高</span>2.
+          长译文静默截断会被当作"成功完成"记入历史
+        </h3>
+        <div class="loc">
+          位置：Decisions「Input size」（L29）× 「不设 max_tokens」（L134–135）×
+          SSE 解析范围（L152–155）× History（L92–93）
+        </div>
+        <p>三条决策叠加形成漏洞：</p>
+        <ul>
+          <li>允许 20,000+ 字符输入（确认后照发，不拆分）；</li>
+          <li>
+            不设 <code>max_tokens</code>，由 provider 默认值兜底——DeepSeek
+            等供应商的默认输出上限通常远小于 2 万字符译文所需的 token 数；
+          </li>
+          <li>
+            SSE 解析"只看 <code>delta.content</code> 和
+            <code>[DONE]</code>"——<strong
+              ><code>finish_reason</code> 被归入忽略范围</strong
+            >。
+          </li>
+        </ul>
+        <p>
+          结果：译文在中途被供应商截断（<code>finish_reason: "length"</code
+          >），流仍以 <code>[DONE]</code> 正常结束，UI
+          视为成功完成，<strong>残缺译文被记入历史</strong>，用户毫无察觉。这对长文翻译这一被
+          spec 明确支持的场景是正确性问题，不是边角。
+        </p>
+        <p>
+          <span class="label">建议：</span>把
+          <code>finish_reason</code> 移出"忽略"清单——解析它，<code>length</code>
+          时在输出区显示"译文被模型输出上限截断"的警告，且不记入历史（与 stall
+          的处理对齐）。可选：长输入时主动设置较大的
+          <code>max_tokens</code>。同时在 Testing 一节补充
+          <code>finish_reason: length</code> 的解析用例。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-high">高</span>3. 启发式只报 "Chinese"，Swap
+          无法映射到 zh-Hans / zh-Hant
+        </h3>
+        <div class="loc">
+          位置:Detection hint（L70–73）× Swap（L74–78）× Languages（L50–56）
+        </div>
+        <p>
+          语言列表区分 <code>zh-Hans</code> 与
+          <code>zh-Hant</code
+          >，但启发式被明确限定为只报告粗粒度类别（Chinese/Japanese/Korean/Russian/Latin/Unknown）。Swap
+          规则只定义了 "Latin maps to English"，<strong
+            >检测结果为 Chinese 时映射到哪个 id 没有定义</strong
+          >——而这是该用户群（zh↔en）最高频的路径。
+        </p>
+        <p>
+          <span class="label">建议：</span>在 Swap
+          规则中补一张完整映射表：Chinese →
+          <code>zh-Hans</code>（主场景默认）、Japanese → <code>ja</code>、Korean
+          → <code>ko</code>、Russian → <code>ru</code>、Latin →
+          <code>en</code>、Unknown →
+          禁用。不要尝试用码位区分简繁（共用字太多，不可靠），直接文档化"繁体用户需手动选择"即可。
+        </p>
+      </div>
+
+      <h2>中优先级</h2>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>4. "Display-only" 措辞与 Swap
+          的功能性依赖自相矛盾
+        </h3>
+        <div class="loc">
+          位置：L73「Display-only; the smart-flip decision belongs to the
+          model」 vs L76「swap uses the heuristic-detected language」
+        </div>
+        <p>
+          前一条说启发式纯展示，紧接着的下一条就把它用于两个功能决策：决定 Swap
+          后的语言、决定 Swap 是否禁用。读者（和实现者）会困惑哪句是对的。
+        </p>
+        <p>
+          <span class="label">建议：</span>改措辞为"启发式不参与 smart-flip
+          判定（归模型），但参与 Swap 的语言推断与可用性判断"。若采纳问题 1
+          的方案 A，则此句需要整体重写。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>5. 30
+          秒首字节超时与自身支持的场景冲突；"valid SSE chunk" 范围未定义
+        </h3>
+        <div class="loc">
+          位置：Error handling「Stream stall」（L224–225）× Decisions「Input
+          size」（L29）
+        </div>
+        <ul>
+          <li>
+            spec 一边允许 20,000+ 字符输入和本地 Ollama
+            端点，一边规定"首字节也适用 30 秒超时"。大 prompt
+            在慢供应商或本地小模型上的首 token 延迟超过 30
+            秒并不罕见——会把合法请求误杀。
+          </li>
+          <li>
+            "Reset the timer after each valid SSE chunk"：reasoning
+            模型思考期发送的
+            <code>reasoning_content</code> 增量被解析器"忽略"，SSE 注释行（<code
+              >: keep-alive</code
+            >）也可能出现——它们算不算"valid
+            chunk"、是否重置计时器，没有定义。若不算，reasoning 模型几乎必然触发
+            stall 误判。
+          </li>
+        </ul>
+        <p>
+          <span class="label">建议：</span>① 区分两档：首字节超时放宽到 60–120
+          秒，chunk 间隔保持 30 秒；② 明确"任何收到的 SSE
+          数据（含被忽略的字段、注释行）都重置计时器"——'忽略'只指不渲染，不指不计为活动信号。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>6. source = target 是否允许未定义
+        </h3>
+        <div class="loc">
+          位置：Behavior「Smart flip / Polish exception」（L60–69）
+        </div>
+        <p>
+          Polish 的"同语种润色"目前只能经由 Auto +
+          模型判定触发。用户最自然的表达方式是<strong
+            >显式选 English → English + Polish</strong
+          >，但 spec 没有说 UI 是否允许 source = target；而其余五种 style
+          下同语种"翻译"又没有意义。另外问题 1 的走查表明 Swap 也可能制造出
+          source = target 的状态。
+        </p>
+        <p>
+          <span class="label">建议：</span>明确规则，推荐：允许 source =
+          target，此时除 Polish 外的 style 下 Translate
+          按钮禁用并显示提示；Polish 下正常执行同语种润色。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge b-mid">中</span>7. Swap 的两个边界未定义</h3>
+        <div class="loc">位置：Behavior「Swap」（L74–78）</div>
+        <ul>
+          <li>
+            <strong>没有上次译文时：</strong>"moves the last translation into
+            the input"——首次使用、或刚 Clear 过时没有译文，此时 Swap
+            是仅交换语言、还是清空输入、还是禁用？未定义。
+          </li>
+          <li>
+            <strong>当前输入的去向：</strong>Swap
+            用译文覆盖输入框，原输入直接丢失。这是 DeepL 的惯例、可以接受，但
+            spec 应明确说"原输入被丢弃"，避免实现者自行发挥（比如塞进 history
+            造成污染）。
+          </li>
+        </ul>
+        <p>
+          <span class="label">建议：</span
+          >补两句：无译文时仅交换语言选择、输入保留；有译文时原输入被丢弃，不进历史。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>8. 流式期间允许编辑输入但禁用 Clear
+          —— 防护不完整
+        </h3>
+        <div class="loc">
+          位置：Run snapshot（L83–84）× Output lifetime（L86–87）
+        </div>
+        <p>
+          流式期间用户可以继续编辑输入（spec 明确允许），那么全选删除就等价于
+          Clear 清空输入——禁用 Clear
+          按钮防住的其实只有它"顺带清空输出"的副作用，但 spec
+          没有说明这一动机，读起来像矛盾。
+        </p>
+        <p>
+          <span class="label">建议：</span>二选一：① 在 spec 写明禁用 Clear
+          的原因是其输出清空副作用与正在流入的输出冲突；② 改为流式期间 Clear
+          仅清输入、不动输出（更一致，推荐）。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>9. partial output 与 inline error
+          的共存渲染未定义
+        </h3>
+        <div class="loc">
+          位置：Error handling 开头（L214–215）× Stream stall（L224–226）
+        </div>
+        <p>
+          "每个失败渲染为输出窗格内的 inline error" 与 "stall 后已有 partial
+          output 保持可见"
+          同时成立时，错误信息和半截译文如何共处一个窗格？错误是替换文本、还是横幅？Copy
+          按钮此时复制的是译文还是连错误一起？均未说明。
+        </p>
+        <p>
+          <span class="label">建议：</span>明确：partial output
+          保留在输出区，错误以横幅形式显示在输出区底部（或 footer 状态区），Copy
+          只复制译文文本。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>10. "Persistence" 措辞误导：<code
+            >useToolInput</code
+          >
+          并不跨重启持久化
+        </h3>
+        <div class="loc">
+          位置：Behavior「Persistence」（L96–97）；已核实
+          <code>src/App.tsx:55-61</code> 与 <code>src/core/store.ts:156</code>
+        </div>
+        <p>
+          该条把"input text via
+          <code>useToolInput("translate")</code>"和"persist across restarts like
+          other tools"写在同一句里，暗示输入跨重启保留。但现状是：<code
+            >App.tsx</code
+          >
+          的 store 订阅只持久化
+          <code>favorites / theme / language / hotkey / diff</code>，<strong
+            ><code>toolInputs</code> 仅存内存</strong
+          >——切换工具时保留、重启即失。
+        </p>
+        <p>
+          <span class="label">建议：</span>拆开表述："输入文本经
+          <code>useToolInput</code>
+          在会话内保留（与其他工具一致，不跨重启）；语言/style/provider 设置经
+          translate slice 跨重启持久化"。顺带提醒：translate slice 需要在
+          <code>App.tsx</code> 的 hydrate 和 subscribe 两处接线，spec 的"like
+          the diff slice"已隐含但 plan 阶段别漏。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>11. i18n 矛盾：Auto-detect 与
+          detected 类别名需要本地化
+        </h3>
+        <div class="loc">
+          位置：i18n（L201–204）× Languages（L50–56）× Detection hint（L70–73）
+        </div>
+        <p>
+          "语言名以母语书写、是常量不走
+          i18n"对真实语言成立,但有两个例外被一并归入了常量：
+        </p>
+        <ul>
+          <li>
+            <strong>Auto-detect</strong>
+            不是语言、没有"母语写法"，中文界面下必须显示"自动检测"；
+          </li>
+          <li>
+            <strong><code>detected: &lt;language&gt;</code></strong>
+            提示中的粗粒度类别名（Chinese / Latin /
+            Unknown…）同样需要随界面语言变化。
+          </li>
+        </ul>
+        <p>
+          <span class="label">建议：</span>明确：<code>auto</code> 条目的 label
+          和检测类别名走 i18n key，其余语言名保持母语常量。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-mid">中</span>12. normalize 对空字符串 model
+          的行为未定义
+        </h3>
+        <div class="loc">
+          位置：State &amp; persistence（L180–184）× Settings（L109–114）
+        </div>
+        <p>
+          "OpenAI/Custom model … preserved as strings when
+          present"——空字符串算不算 "present"？用户清空 OpenAI 的 model
+          字段后，请求会带 <code>"model": ""</code> 发出，必然 400。Custom 的空
+          endpoint 有校验兜底（L228–229），空 model 没有。
+        </p>
+        <p>
+          <span class="label">建议：</span>补充：OpenAI model 为空白时回退默认
+          <code>gpt-5.2</code>；Custom model 为空白时与无 API key
+          的预设同等处理——阻止发送并给出 Settings 引导提示。
+        </p>
+      </div>
+
+      <h2>低优先级</h2>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-low">低</span>13. 事实错误：<code
+            >__TAURI_INTERNALS__</code
+          >
+          检测不在 <code>storage.ts</code>
+        </h3>
+        <div class="loc">
+          位置：Architecture 表 <code>client.ts</code> 行（L129）；已核实
+          <code>src/core/services/runtime.ts:7</code>
+        </div>
+        <p>
+          spec 写 "detected via <code>__TAURI_INTERNALS__</code>, same as
+          <code>storage.ts</code>"，但该检测实际封装在
+          <code>src/core/services/runtime.ts</code> 的 helper 中，<code
+            >storage.ts</code
+          >
+          里没有这段代码。
+        </p>
+        <p>
+          <span class="label">建议：</span>改为 "reuse the
+          <code>isTauri</code> helper from
+          <code>src/core/services/runtime.ts</code
+          >"——既纠正出处，也避免实现者重复造检测逻辑。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-low">低</span>14. capability
+          <code>https://**</code> 与"只访问用户配置端点"的承诺存在差距
+        </h3>
+        <div class="loc">
+          位置：Overview（L13–15）× Native side（L193–197）× Documentation
+          changes（L248–250）
+        </div>
+        <p>
+          Overview 承诺"network calls … only to the user-configured provider
+          endpoint"，但 Tauri capability 是静态声明，<code>https://**</code>
+          实际允许 WebView 访问任意 HTTPS
+          域——真正的约束只存在于应用层逻辑。Custom 端点的存在决定了 capability
+          没法收窄，这本身没问题，但写进
+          <code>AGENTS.md</code> 的安全例外不应给出比实际强的承诺。
+        </p>
+        <p>
+          <span class="label">建议：</span>在 AGENTS.md
+          例外条目里如实分层表述："capability 层放开 https + loopback
+          http；'仅访问配置端点'由应用层代码保证"。这样后续安全审查不会被文档误导。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span class="badge b-low">低</span>15. <code>pushHistory</code> 按
+          input 去重的副作用未提及
+        </h3>
+        <div class="loc">
+          位置：History（L92–95）；已核实
+          <code>src/core/services/history.ts:7-9</code>
+        </div>
+        <p>
+          现有 <code>pushHistory</code> 会把相同 input
+          的旧条目去掉。同一段文字先翻英文、再翻日文（或换 style
+          重翻），历史里只剩最后一次。鉴于 restore 本来只恢复
+          input，影响有限，但 spec 说"standard
+          useHistory"时应意识到这一行为是契约的一部分。
+        </p>
+        <p>
+          <span class="label">建议：</span>在 History
+          条目加一句"同一输入的多次翻译在历史中仅保留最近一次（沿用 pushHistory
+          去重语义）"，确认这是接受的取舍。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge b-low">低</span>16. 两处小的未定义状态</h3>
+        <div class="loc">
+          位置：Trigger（L79–81）× Target pane footer（L44–46）
+        </div>
+        <ul>
+          <li>
+            流式期间按 ⌘↵：按钮已变成 Stop，那么快捷键是触发 Stop 还是
+            no-op？建议与按钮一致 = Stop。
+          </li>
+          <li>
+            footer 状态只定义了 <code>● streaming…</code> 和
+            <code>stopped</code
+            >，成功完成后显示什么（<code>done</code>？清空？）未定义。
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="badge b-low">低</span>17. 顶栏布局在窄窗口下的风险</h3>
+        <div class="loc">位置：Layout（L30、L36–38）</div>
+        <p>
+          窄窗口下两个 pane 改为堆叠,但顶栏要同排容纳 6 项 style 分段控件 +
+          history 按钮 + Translate 按钮（六个 style
+          的英文标签合计已相当宽，中文界面更甚）。spec 对 pane
+          的响应式有交代，对顶栏没有。
+        </p>
+        <p>
+          <span class="label">建议：</span>补一句窄窗口下顶栏的降级策略——style
+          分段控件改为下拉、或允许横向滚动/换行。
+        </p>
+      </div>
+
+      <h2>已核实无误的部分</h2>
+      <table>
+        <tr>
+          <th>spec 引用</th>
+          <th>核实结果</th>
+        </tr>
+        <tr>
+          <td><code>useHistory</code> 20 条环形缓冲</td>
+          <td>
+            ✅ <code>history.ts</code> 的 <code>pushHistory(cap = 20)</code>
+          </td>
+        </tr>
+        <tr>
+          <td>diff slice 模式（<code>makeDefault/normalize</code>）</td>
+          <td>✅ <code>store.ts:38/84</code>，可照搬</td>
+        </tr>
+        <tr>
+          <td>Settings 区块顺序（Appearance → Global hotkey）</td>
+          <td>✅ <code>Settings.tsx:65/108</code>，插入位置成立</td>
+        </tr>
+        <tr>
+          <td>AGENTS.md 离线规则需要例外声明</td>
+          <td>
+            ✅ <code>AGENTS.md:61</code> 确有该条；"ten offline utilities"
+            计数也需同步更新（spec 已覆盖）
+          </td>
+        </tr>
+        <tr>
+          <td>无 <code>detectClipboard</code> 的理由</td>
+          <td>✅ 合理——任何文本都可翻译，横幅会对一切剪贴板内容触发</td>
+        </tr>
+        <tr>
+          <td>双消息 prompt + 防注入声明 + 不回显 API key</td>
+          <td>✅ 设计良好，无修改意见</td>
+        </tr>
+      </table>
+
+      <div class="footnote">
+        本报告由 Claude Code 生成于 2026-06-10。行号引用基于
+        <code>2026-06-10-translate-tool-design.md</code> 当前版本（commit
+        6c0ee66）。
+      </div>
+    </main>
+  </body>
+</html>
