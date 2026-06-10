@@ -2,6 +2,7 @@
 
 **Date:** 2026-06-10
 **Status:** Approved design
+**Mockup:** `docs/superpowers/mockups/color-history-palettes-mockup.html`
 
 ## Summary
 
