@@ -40,6 +40,13 @@ export const zhCN = {
   "components.history.empty": "暂无历史",
   "components.output.label": "输出",
   "components.output.lineCol": "（第 {line} 行，第 {col} 列）",
+  "components.search.label": "在输出中查找",
+  "components.search.placeholder": "查找",
+  "components.search.count": "{current} / {total}",
+  "components.search.noMatches": "无匹配",
+  "components.search.prev": "上一个匹配",
+  "components.search.next": "下一个匹配",
+  "components.search.close": "关闭查找",
 
   "common.errors.inputEmpty": "输入为空",
   "core.transform.errors.noRustFastPath": "{operation} 没有 Rust 快速路径",

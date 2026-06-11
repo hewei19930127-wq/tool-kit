@@ -1,8 +1,12 @@
 import { MergeView } from "@codemirror/merge";
-import { EditorState } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
+import { EditorState, type Extension, RangeSetBuilder } from "@codemirror/state";
+import { Decoration, EditorView } from "@codemirror/view";
 import { useEffect, useMemo, useRef } from "react";
+import { SearchBar } from "@/components/SearchBar";
+import { SearchMark } from "@/components/SearchMark";
+import { useOutputSearch } from "@/core/hooks/useOutputSearch";
 import { type I18nKey, useI18n } from "@/core/i18n";
+import { overlayMatches, type SearchMatch } from "@/core/services/search";
 import { type DiffView, useAppStore } from "@/core/store";
 import { DiffTabs } from "./DiffTabs";
 import { computeDiff, type DiffMode, diffStats } from "./diff";
@@ -16,6 +20,24 @@ const VIEW_LABEL_KEYS: Record<DiffView, I18nKey> = {
   inline: "tools.diff.view.inline",
   split: "tools.diff.view.split",
 };
+
+/** Find-in-output highlights for one split-view editor, styled like SearchMark. */
+function searchDecorations(matches: SearchMatch[], activeStart: number | null): Extension {
+  const builder = new RangeSetBuilder<Decoration>();
+  for (const match of matches) {
+    builder.add(
+      match.start,
+      match.end,
+      Decoration.mark({
+        class:
+          match.start === activeStart
+            ? "tk-search-match tk-search-match-active"
+            : "tk-search-match",
+      }),
+    );
+  }
+  return EditorView.decorations.of(builder.finish());
+}
 
 export default function DiffTool() {
   const { t } = useI18n();
@@ -78,23 +100,71 @@ export default function DiffTool() {
   const parts = useMemo(() => computeDiff(active.a, active.b, mode), [active.a, active.b, mode]);
   const stats = useMemo(() => diffStats(parts), [parts]);
 
+  // The searchable text mirrors what each view renders: the concatenated diff
+  // runs inline, or both documents in split view (NUL-separated so a query can
+  // never match across the A/B boundary).
+  const searchText = useMemo(
+    () =>
+      view === "inline" ? parts.map((part) => part.value).join("") : `${active.a}\u0000${active.b}`,
+    [view, parts, active.a, active.b],
+  );
+  const search = useOutputSearch(searchText);
+
+  const inlineRuns = useMemo(
+    () =>
+      overlayMatches(
+        parts.map((part) => ({ text: part.value, meta: part })),
+        view === "inline" ? search.matches : [],
+      ),
+    [parts, view, search.matches],
+  );
+
   const mergeHost = useRef<HTMLDivElement>(null);
+  const { matches, activeIndex } = search;
   useEffect(() => {
     if (view !== "split" || !mergeHost.current) return;
+
+    // Map matches over `a\0b` back onto the two documents. A match overlapping
+    // the separator can only happen for queries containing NUL; drop it.
+    const aLength = active.a.length;
+    const aMatches: SearchMatch[] = [];
+    const bMatches: SearchMatch[] = [];
+    for (const match of matches) {
+      if (match.end <= aLength) aMatches.push(match);
+      else if (match.start > aLength) {
+        bMatches.push({ start: match.start - aLength - 1, end: match.end - aLength - 1 });
+      }
+    }
+    const activeMatch = matches[activeIndex] ?? null;
+    const activeInA = activeMatch != null && activeMatch.end <= aLength;
+    const activeInB = activeMatch != null && activeMatch.start > aLength;
 
     const mergeView = new MergeView({
       parent: mergeHost.current,
       a: {
         doc: active.a,
-        extensions: [EditorView.editable.of(false), EditorState.readOnly.of(true)],
+        extensions: [
+          EditorView.editable.of(false),
+          EditorState.readOnly.of(true),
+          searchDecorations(aMatches, activeInA ? activeMatch.start : null),
+        ],
       },
       b: {
         doc: active.b,
-        extensions: [EditorView.editable.of(false), EditorState.readOnly.of(true)],
+        extensions: [
+          EditorView.editable.of(false),
+          EditorState.readOnly.of(true),
+          searchDecorations(bMatches, activeInB ? activeMatch.start - aLength - 1 : null),
+        ],
       },
     });
+    if (activeInA || activeInB) {
+      const editor = activeInA ? mergeView.a : mergeView.b;
+      const pos = activeInA ? activeMatch.start : activeMatch.start - aLength - 1;
+      editor.dispatch({ effects: EditorView.scrollIntoView(pos, { y: "center" }) });
+    }
     return () => mergeView.destroy();
-  }, [view, active.a, active.b]);
+  }, [view, active.a, active.b, matches, activeIndex]);
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -153,34 +223,45 @@ export default function DiffTool() {
         />
       </div>
 
-      {view === "inline" ? (
-        <pre
-          role="region"
-          aria-label={t("tools.diff.inline")}
-          className="min-h-0 flex-1 overflow-auto rounded-md border border-border bg-muted p-3 whitespace-pre-wrap font-mono text-sm leading-5"
-        >
-          {parts.map((part, index) =>
-            part.added ? (
-              <ins key={index} className="bg-success/20 text-success no-underline">
-                {part.value}
-              </ins>
-            ) : part.removed ? (
-              <del key={index} className="bg-error/20 text-error">
-                {part.value}
-              </del>
-            ) : (
-              <span key={index}>{part.value}</span>
-            ),
-          )}
-        </pre>
-      ) : (
-        <div
-          ref={mergeHost}
-          role="region"
-          aria-label={t("tools.diff.split")}
-          className="min-h-0 flex-1 overflow-auto"
-        />
-      )}
+      <div className="relative min-h-0 flex-1">
+        {view === "inline" ? (
+          <pre
+            role="region"
+            aria-label={t("tools.diff.inline")}
+            className="h-full overflow-auto rounded-md border border-border bg-muted p-3 whitespace-pre-wrap font-mono text-sm leading-5"
+          >
+            {inlineRuns.map((run) => {
+              const text =
+                run.match == null ? (
+                  run.text
+                ) : (
+                  <SearchMark key={run.start} active={run.match === search.activeIndex}>
+                    {run.text}
+                  </SearchMark>
+                );
+              return run.meta.added ? (
+                <ins key={run.start} className="bg-success/20 text-success no-underline">
+                  {text}
+                </ins>
+              ) : run.meta.removed ? (
+                <del key={run.start} className="bg-error/20 text-error">
+                  {text}
+                </del>
+              ) : (
+                <span key={run.start}>{text}</span>
+              );
+            })}
+          </pre>
+        ) : (
+          <div
+            ref={mergeHost}
+            role="region"
+            aria-label={t("tools.diff.split")}
+            className="h-full overflow-auto"
+          />
+        )}
+        <SearchBar search={search} />
+      </div>
     </div>
   );
 }

@@ -2,7 +2,9 @@ import { useState } from "react";
 import { CopyButton } from "@/components/CopyButton";
 import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
+import { SearchBar } from "@/components/SearchBar";
 import { useHistory } from "@/core/hooks/useHistory";
+import { useOutputSearch } from "@/core/hooks/useOutputSearch";
 import { useToolInput } from "@/core/hooks/useToolInput";
 import { useTransform } from "@/core/hooks/useTransform";
 import { type I18nKey, useI18n } from "@/core/i18n";
@@ -30,6 +32,7 @@ export default function JsonTool() {
   const { entries, record } = useHistory("json");
   const { run, pending } = useTransform();
   const copyText = result?.ok ? resultValue(result, t) : "";
+  const search = useOutputSearch(copyText);
 
   async function apply(action: Action) {
     const next = "op" in action ? await run(action.op, input) : action.run(input);
@@ -68,7 +71,15 @@ export default function JsonTool() {
           placeholder={t("tools.json.placeholder")}
           className="h-full min-h-64 resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"
         />
-        <OutputPane result={result} emptyHint={t("tools.json.empty")} language="json" />
+        <div className="relative min-h-64">
+          <OutputPane
+            result={result}
+            emptyHint={t("tools.json.empty")}
+            language="json"
+            search={search}
+          />
+          <SearchBar search={search} />
+        </div>
       </div>
     </div>
   );

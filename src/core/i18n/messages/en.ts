@@ -38,6 +38,13 @@ export const en = {
   "components.history.empty": "No history yet.",
   "components.output.label": "Output",
   "components.output.lineCol": "(line {line}, col {col})",
+  "components.search.label": "Find in output",
+  "components.search.placeholder": "Find",
+  "components.search.count": "{current} of {total}",
+  "components.search.noMatches": "No matches",
+  "components.search.prev": "Previous match",
+  "components.search.next": "Next match",
+  "components.search.close": "Close find",
 
   "common.errors.inputEmpty": "Input is empty",
   "core.transform.errors.noRustFastPath": "No Rust fast-path for {operation}",

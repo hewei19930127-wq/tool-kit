@@ -31,6 +31,21 @@ describe("XmlTool", () => {
     expect((await screen.findByLabelText("Output")).textContent).toContain("<b>1</b>");
   });
 
+  it("highlights output matches with Cmd+F", async () => {
+    render(<XmlTool />);
+    fireEvent.change(screen.getByLabelText("XML input"), {
+      target: { value: "<item><item>1</item></item>" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    const output = await screen.findByLabelText("Output");
+
+    fireEvent.keyDown(window, { key: "f", metaKey: true });
+    fireEvent.change(screen.getByLabelText("Find in output"), { target: { value: "item" } });
+
+    expect(output.querySelectorAll("mark")).toHaveLength(4);
+    expect(screen.getByText("1 of 4")).toBeInTheDocument();
+  });
+
   it("shows an error for malformed XML", () => {
     render(<XmlTool />);
     fireEvent.change(screen.getByLabelText("XML input"), {

@@ -47,6 +47,46 @@ describe("JsonTool", () => {
     expect(input.value).toBe('{"a":1}');
   });
 
+  it("finds and cycles output matches with Cmd+F", async () => {
+    render(<JsonTool />);
+    const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '{"alpha":1,"beta":"alpha"}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    const output = await screen.findByLabelText("Output");
+
+    fireEvent.keyDown(window, { key: "f", metaKey: true });
+    const finder = screen.getByLabelText("Find in output");
+    fireEvent.change(finder, { target: { value: "alpha" } });
+
+    expect(output.querySelectorAll("mark")).toHaveLength(2);
+    expect(output.querySelectorAll("mark[data-search-active]")).toHaveLength(1);
+    expect(screen.getByText("1 of 2")).toBeInTheDocument();
+
+    fireEvent.keyDown(finder, { key: "Enter" });
+    expect(screen.getByText("2 of 2")).toBeInTheDocument();
+    fireEvent.keyDown(finder, { key: "Enter" });
+    expect(screen.getByText("1 of 2")).toBeInTheDocument();
+    fireEvent.keyDown(finder, { key: "Enter", shiftKey: true });
+    expect(screen.getByText("2 of 2")).toBeInTheDocument();
+  });
+
+  it("closes the find bar with Escape and clears highlights", async () => {
+    render(<JsonTool />);
+    const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '{"alpha":1}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    const output = await screen.findByLabelText("Output");
+
+    fireEvent.keyDown(window, { key: "f", metaKey: true });
+    const finder = screen.getByLabelText("Find in output");
+    fireEvent.change(finder, { target: { value: "alpha" } });
+    expect(output.querySelectorAll("mark")).toHaveLength(1);
+
+    fireEvent.keyDown(finder, { key: "Escape" });
+    expect(screen.queryByLabelText("Find in output")).not.toBeInTheDocument();
+    expect(output.querySelectorAll("mark")).toHaveLength(0);
+  });
+
   it("escapes and unescapes JSON string literals", () => {
     render(<JsonTool />);
     const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;

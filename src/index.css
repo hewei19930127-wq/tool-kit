@@ -140,6 +140,23 @@ kbd {
   background: transparent;
 }
 
+/*
+ * Find-in-output (Cmd+F) match highlights — shared by <mark> runs in the
+ * JSON/XML/Diff output panes and the CodeMirror decorations in the diff split
+ * view. The active match gets a solid amber chip with fixed dark text so it
+ * stays readable over both themes and the diff ins/del tints.
+ */
+.tk-search-match {
+  border-radius: 2px;
+  background: color-mix(in oklch, var(--favorite) 35%, transparent);
+  color: inherit;
+}
+
+.tk-search-match-active {
+  background: var(--favorite);
+  color: oklch(0.24 0.02 60);
+}
+
 /* Diff tool split view: detach the two CodeMirror panes into separate cards. */
 .cm-mergeView {
   height: 100%;

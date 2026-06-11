@@ -123,6 +123,43 @@ describe("DiffTool", () => {
     expect(screen.getAllByRole("tab")).toHaveLength(1);
   });
 
+  it("highlights inline diff matches with Cmd+F", () => {
+    render(<DiffTool />);
+    fireEvent.click(screen.getByRole("button", { name: "Inline" }));
+    fireEvent.change(screen.getByLabelText("Original (A)"), {
+      target: { value: "hello world" },
+    });
+    fireEvent.change(screen.getByLabelText("Changed (B)"), {
+      target: { value: "hello brave world" },
+    });
+
+    fireEvent.keyDown(window, { key: "f", metaKey: true });
+    fireEvent.change(screen.getByLabelText("Find in output"), { target: { value: "brave" } });
+
+    const inline = screen.getByLabelText("Inline diff");
+    expect(inline.querySelectorAll("mark")).toHaveLength(1);
+    expect(inline.querySelector("ins mark")?.textContent).toBe("brave");
+    expect(screen.getByText("1 of 1")).toBeInTheDocument();
+  });
+
+  it("counts matches across both documents in split view", () => {
+    render(<DiffTool />);
+    fireEvent.change(screen.getByLabelText("Original (A)"), {
+      target: { value: "alpha\nbeta" },
+    });
+    fireEvent.change(screen.getByLabelText("Changed (B)"), {
+      target: { value: "alpha\ngamma" },
+    });
+
+    fireEvent.keyDown(window, { key: "f", metaKey: true });
+    fireEvent.change(screen.getByLabelText("Find in output"), { target: { value: "alpha" } });
+
+    expect(screen.getByText("1 of 2")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Split diff").querySelectorAll(".tk-search-match").length,
+    ).toBeGreaterThan(0);
+  });
+
   it("leaves Cmd+K to the global command palette and does not add a tab", () => {
     render(<DiffTool />);
     fireEvent.keyDown(window, { key: "k", metaKey: true });
