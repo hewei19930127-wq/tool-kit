@@ -4,6 +4,7 @@ import { Decoration, EditorView } from "@codemirror/view";
 import { useEffect, useMemo, useRef } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { SearchMark } from "@/components/SearchMark";
+import { WrapToggle } from "@/components/WrapToggle";
 import { useOutputSearch } from "@/core/hooks/useOutputSearch";
 import { type I18nKey, useI18n } from "@/core/i18n";
 import { overlayMatches, type SearchMatch } from "@/core/services/search";
@@ -47,6 +48,7 @@ export default function DiffTool() {
   );
   const mode = useAppStore((state) => state.diff.mode);
   const view = useAppStore((state) => state.diff.view);
+  const wrap = useAppStore((state) => state.wrap);
   const setDiffTabSide = useAppStore((state) => state.setDiffTabSide);
   const setDiffMode = useAppStore((state) => state.setDiffMode);
   const setDiffView = useAppStore((state) => state.setDiffView);
@@ -146,6 +148,7 @@ export default function DiffTool() {
         extensions: [
           EditorView.editable.of(false),
           EditorState.readOnly.of(true),
+          ...(wrap ? [EditorView.lineWrapping] : []),
           searchDecorations(aMatches, activeInA ? activeMatch.start : null),
         ],
       },
@@ -154,6 +157,7 @@ export default function DiffTool() {
         extensions: [
           EditorView.editable.of(false),
           EditorState.readOnly.of(true),
+          ...(wrap ? [EditorView.lineWrapping] : []),
           searchDecorations(bMatches, activeInB ? activeMatch.start - aLength - 1 : null),
         ],
       },
@@ -164,7 +168,7 @@ export default function DiffTool() {
       editor.dispatch({ effects: EditorView.scrollIntoView(pos, { y: "center" }) });
     }
     return () => mergeView.destroy();
-  }, [view, active.a, active.b, matches, activeIndex]);
+  }, [view, active.a, active.b, matches, activeIndex, wrap]);
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
@@ -200,10 +204,13 @@ export default function DiffTool() {
             {t(VIEW_LABEL_KEYS[nextView])}
           </button>
         ))}
-        <span aria-label={t("tools.diff.stats")} className="ml-auto font-mono text-sm">
-          <span className="text-success">+{stats.added}</span>{" "}
-          <span className="text-error">-{stats.removed}</span>
-        </span>
+        <div className="ml-auto flex items-center gap-3">
+          <WrapToggle />
+          <span aria-label={t("tools.diff.stats")} className="font-mono text-sm">
+            <span className="text-success">+{stats.added}</span>{" "}
+            <span className="text-error">-{stats.removed}</span>
+          </span>
+        </div>
       </div>
 
       <div className="grid h-40 grid-cols-1 gap-3 md:grid-cols-2">
@@ -228,7 +235,9 @@ export default function DiffTool() {
           <pre
             role="region"
             aria-label={t("tools.diff.inline")}
-            className="h-full overflow-auto rounded-md border border-border bg-muted p-3 whitespace-pre-wrap font-mono text-sm leading-5"
+            className={`h-full overflow-auto rounded-md border border-border bg-muted p-3 font-mono text-sm leading-5 ${
+              wrap ? "whitespace-pre-wrap" : "whitespace-pre"
+            }`}
           >
             {inlineRuns.map((run) => {
               const text =

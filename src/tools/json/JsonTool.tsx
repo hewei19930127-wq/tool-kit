@@ -3,12 +3,14 @@ import { CopyButton } from "@/components/CopyButton";
 import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
 import { SearchBar } from "@/components/SearchBar";
+import { WrapToggle } from "@/components/WrapToggle";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useOutputSearch } from "@/core/hooks/useOutputSearch";
 import { useToolInput } from "@/core/hooks/useToolInput";
 import { useTransform } from "@/core/hooks/useTransform";
 import { type I18nKey, useI18n } from "@/core/i18n";
 import { resultValue } from "@/core/i18n/result";
+import { useAppStore } from "@/core/store";
 import type { ToolResult } from "@/core/types";
 import { escapeJson, unescapeJson, validateJson } from "./json";
 
@@ -33,6 +35,7 @@ export default function JsonTool() {
   const { run, pending } = useTransform();
   const copyText = result?.ok ? resultValue(result, t) : "";
   const search = useOutputSearch(copyText);
+  const wrap = useAppStore((state) => state.wrap);
 
   async function apply(action: Action) {
     const next = "op" in action ? await run(action.op, input) : action.run(input);
@@ -58,6 +61,7 @@ export default function JsonTool() {
           <span className="text-xs text-muted-foreground">{t("tools.json.working")}</span>
         )}
         <div className="ml-auto flex items-center gap-2">
+          <WrapToggle />
           <HistoryButton entries={entries} onRestore={setInput} />
           <CopyButton text={copyText} />
         </div>
@@ -77,6 +81,7 @@ export default function JsonTool() {
             emptyHint={t("tools.json.empty")}
             language="json"
             search={search}
+            wrap={wrap}
           />
           <SearchBar search={search} />
         </div>

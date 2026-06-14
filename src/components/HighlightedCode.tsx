@@ -22,12 +22,15 @@ export function HighlightedCode({
   language,
   label,
   search,
+  wrap = true,
 }: {
   code: string;
   language: Language;
   label: string;
   /** Find-in-output matches over `code`, rendered as <mark> runs. */
   search?: SearchHighlight;
+  /** When false, lines do not wrap and the pane scrolls horizontally. */
+  wrap?: boolean;
 }) {
   const tokens = useMemo(() => tokenize(code, language), [code, language]);
   // Tokens concatenate back to `code` exactly, so match offsets line up.
@@ -44,7 +47,9 @@ export function HighlightedCode({
     <pre
       role="region"
       aria-label={label}
-      className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
+      className={`font-mono text-sm leading-5 ${
+        wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre"
+      }`}
     >
       {runs.map((run) => {
         // Run starts are unique offsets into the source — stable React keys.

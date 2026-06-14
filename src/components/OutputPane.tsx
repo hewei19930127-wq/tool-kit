@@ -30,6 +30,7 @@ export function OutputPane({
   label,
   language,
   search,
+  wrap = true,
 }: {
   result: ToolResult | null;
   emptyHint: string;
@@ -38,6 +39,8 @@ export function OutputPane({
   language?: Language;
   /** Find-in-output matches over the rendered output text. */
   search?: SearchHighlight;
+  /** When false, output lines do not wrap and the pane scrolls horizontally. */
+  wrap?: boolean;
 }) {
   const { t } = useI18n();
   const outputLabel = label ?? t("components.output.label");
@@ -53,12 +56,15 @@ export function OutputPane({
             language={language}
             label={outputLabel}
             search={search}
+            wrap={wrap}
           />
         ) : (
           <pre
             role="region"
             aria-label={outputLabel}
-            className="whitespace-pre-wrap break-words font-mono text-sm leading-5"
+            className={`font-mono text-sm leading-5 ${
+              wrap ? "whitespace-pre-wrap break-words" : "whitespace-pre"
+            }`}
           >
             <PlainOutput text={resultValue(result, t)} search={search} />
           </pre>

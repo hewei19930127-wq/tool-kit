@@ -26,7 +26,7 @@ export interface DiffSlice {
 }
 
 type HydrateSlice = Partial<
-  Pick<AppState, "favorites" | "theme" | "language" | "activeToolId" | "hotkey">
+  Pick<AppState, "favorites" | "theme" | "language" | "activeToolId" | "hotkey" | "wrap">
 > & {
   diff?: unknown;
 };
@@ -114,6 +114,8 @@ export interface AppState {
   theme: ThemeMode;
   language: LanguagePreference;
   hotkey: string;
+  /** Word-wrap output panes (JSON/XML/Diff). Shared across those tools. */
+  wrap: boolean;
   toolInputs: Record<string, string>;
   diff: DiffSlice;
   setActiveTool: (id: string) => void;
@@ -121,6 +123,7 @@ export interface AppState {
   setTheme: (theme: ThemeMode) => void;
   setLanguage: (language: LanguagePreference) => void;
   setHotkey: (hotkey: string) => void;
+  setWrap: (wrap: boolean) => void;
   setToolInput: (id: string, text: string) => void;
   addDiffTab: () => void;
   closeDiffTab: (id: string) => void;
@@ -141,6 +144,7 @@ export const useAppStore = create<AppState>((set) => ({
   theme: "system",
   language: DEFAULT_LANGUAGE,
   hotkey: DEFAULT_HOTKEY,
+  wrap: true,
   toolInputs: {},
   diff: makeDefaultDiffSlice(),
   setActiveTool: (id) => set({ activeToolId: id }),
@@ -153,6 +157,7 @@ export const useAppStore = create<AppState>((set) => ({
   setTheme: (theme) => set({ theme }),
   setLanguage: (language) => set({ language }),
   setHotkey: (hotkey) => set({ hotkey }),
+  setWrap: (wrap) => set({ wrap }),
   setToolInput: (id, text) => set((state) => ({ toolInputs: { ...state.toolInputs, [id]: text } })),
   addDiffTab: () =>
     set((state) => {

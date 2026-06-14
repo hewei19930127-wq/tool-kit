@@ -19,7 +19,7 @@ function memoryBackend(): KV {
 describe("JsonTool", () => {
   beforeEach(() => {
     setStorageBackend(memoryBackend());
-    useAppStore.setState({ toolInputs: {} });
+    useAppStore.setState({ toolInputs: {}, wrap: true });
   });
 
   it("formats input on Format", async () => {
@@ -85,6 +85,19 @@ describe("JsonTool", () => {
     fireEvent.keyDown(finder, { key: "Escape" });
     expect(screen.queryByLabelText("Find in output")).not.toBeInTheDocument();
     expect(output.querySelectorAll("mark")).toHaveLength(0);
+  });
+
+  it("toggles word wrap on the output pane", async () => {
+    render(<JsonTool />);
+    const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
+    fireEvent.change(input, { target: { value: '{"a":1}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    const output = await screen.findByLabelText("Output");
+    expect(output.className).toContain("whitespace-pre-wrap");
+
+    fireEvent.click(screen.getByRole("button", { name: "Toggle word wrap" }));
+    expect(output.className).toContain("whitespace-pre");
+    expect(output.className).not.toContain("whitespace-pre-wrap");
   });
 
   it("escapes and unescapes JSON string literals", () => {

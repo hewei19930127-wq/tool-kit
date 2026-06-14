@@ -3,12 +3,14 @@ import { CopyButton } from "@/components/CopyButton";
 import { HistoryButton } from "@/components/HistoryButton";
 import { OutputPane } from "@/components/OutputPane";
 import { SearchBar } from "@/components/SearchBar";
+import { WrapToggle } from "@/components/WrapToggle";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useOutputSearch } from "@/core/hooks/useOutputSearch";
 import { useToolInput } from "@/core/hooks/useToolInput";
 import { useTransform } from "@/core/hooks/useTransform";
 import { type I18nKey, useI18n } from "@/core/i18n";
 import { resultValue } from "@/core/i18n/result";
+import { useAppStore } from "@/core/store";
 import type { ToolResult } from "@/core/types";
 import { validateXml } from "./xml";
 
@@ -30,6 +32,7 @@ export default function XmlTool() {
   const { run, pending } = useTransform();
   const copyText = result?.ok ? resultValue(result, t) : "";
   const search = useOutputSearch(copyText);
+  const wrap = useAppStore((state) => state.wrap);
 
   async function apply(action: Action) {
     const next = "op" in action ? await run(action.op, input) : action.run(input);
@@ -53,6 +56,7 @@ export default function XmlTool() {
         ))}
         {pending && <span className="text-xs text-muted-foreground">{t("tools.xml.working")}</span>}
         <div className="ml-auto flex items-center gap-2">
+          <WrapToggle />
           <HistoryButton entries={entries} onRestore={setInput} />
           <CopyButton text={copyText} />
         </div>
@@ -72,6 +76,7 @@ export default function XmlTool() {
             emptyHint={t("tools.xml.empty")}
             language="xml"
             search={search}
+            wrap={wrap}
           />
           <SearchBar search={search} />
         </div>

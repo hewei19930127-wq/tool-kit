@@ -8,6 +8,7 @@ describe("DiffTool", () => {
     useAppStore.setState({
       language: "en",
       toolInputs: {},
+      wrap: true,
       diff: makeDefaultDiffSlice(),
     });
   });
@@ -158,6 +159,17 @@ describe("DiffTool", () => {
     expect(
       screen.getByLabelText("Split diff").querySelectorAll(".tk-search-match").length,
     ).toBeGreaterThan(0);
+  });
+
+  it("toggles word wrap on the inline diff", () => {
+    render(<DiffTool />);
+    fireEvent.click(screen.getByRole("button", { name: "Inline" }));
+    const inline = screen.getByLabelText("Inline diff");
+    expect(inline.className).toContain("whitespace-pre-wrap");
+
+    fireEvent.click(screen.getByRole("button", { name: "Toggle word wrap" }));
+    expect(inline.className).toContain("whitespace-pre");
+    expect(inline.className).not.toContain("whitespace-pre-wrap");
   });
 
   it("leaves Cmd+K to the global command palette and does not add a tab", () => {

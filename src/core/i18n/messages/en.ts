@@ -45,6 +45,8 @@ export const en = {
   "components.search.prev": "Previous match",
   "components.search.next": "Next match",
   "components.search.close": "Close find",
+  "components.wrap.label": "Wrap",
+  "components.wrap.toggle": "Toggle word wrap",
 
   "common.errors.inputEmpty": "Input is empty",
   "core.transform.errors.noRustFastPath": "No Rust fast-path for {operation}",
