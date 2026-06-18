@@ -104,7 +104,45 @@ describe("App", () => {
     });
 
     await waitFor(() =>
-      expect(backend.values.get("diff")).toEqual({ ...persistedDiff, view: "split" }),
+      expect(backend.values.get("diff")).toEqual({
+        ...persistedDiff,
+        view: "split",
+      }),
     );
+  });
+
+  it("renders favorites in their curated order and reorders them by pointer drag", async () => {
+    // Curated order is the reverse of the registry order (JSON precedes Base64).
+    setStorageBackend(memoryBackend({ favorites: ["base64", "json"] }));
+
+    render(<App />);
+    await screen.findByText("ToolKit");
+
+    const rowOf = (name: string) =>
+      screen.getByRole("button", { name }).closest(".group") as HTMLElement;
+
+    // Favorites follow the curated order, not the registry order.
+    const base64Row = rowOf("Base64");
+    const jsonRow = rowOf("JSON");
+    expect(
+      base64Row.compareDocumentPosition(jsonRow) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    // jsdom has no layout, so give the rows stacked boxes to resolve against.
+    const stub = (top: number) => vi.fn(() => ({ top, height: 20, bottom: top + 20 }) as DOMRect);
+    base64Row.getBoundingClientRect = stub(0);
+    jsonRow.getBoundingClientRect = stub(20);
+
+    // Grab JSON's handle and move above Base64's midpoint to drop it first.
+    const dispatch = (target: EventTarget, type: string, init: MouseEventInit = {}) =>
+      act(() => {
+        target.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, ...init }));
+      });
+
+    dispatch(screen.getByRole("button", { name: "Reorder JSON" }), "pointerdown", { button: 0 });
+    dispatch(document, "pointermove", { clientY: 2 });
+    dispatch(document, "pointerup");
+
+    expect(useAppStore.getState().favorites).toEqual(["json", "base64"]);
   });
 });

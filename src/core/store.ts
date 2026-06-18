@@ -1,6 +1,18 @@
 import { create } from "zustand";
 import type { LanguagePreference } from "@/core/i18n/types";
 import type { DiffMode } from "@/tools/diff/diff";
+import {
+  AUTO,
+  DEEPSEEK_ENDPOINT,
+  DEEPSEEK_MODELS,
+  DEFAULT_OPENAI_MODEL,
+  LANGUAGES,
+  OPENAI_ENDPOINT,
+  type ProviderConfig,
+  type ProviderId,
+  STYLE_IDS,
+  type StyleId,
+} from "@/tools/translate/translate";
 
 export type ThemeMode = "system" | "light" | "dark";
 export type DiffView = "inline" | "split";
@@ -25,10 +37,21 @@ export interface DiffSlice {
   view: DiffView;
 }
 
+export interface TranslateSlice {
+  /** Language id or AUTO. */
+  source: string;
+  /** Language id (never AUTO). */
+  target: string;
+  style: StyleId;
+  provider: ProviderId;
+  providers: Record<ProviderId, ProviderConfig>;
+}
+
 type HydrateSlice = Partial<
   Pick<AppState, "favorites" | "theme" | "language" | "activeToolId" | "hotkey" | "wrap">
 > & {
   diff?: unknown;
+  translate?: unknown;
 };
 
 function makeBlankTab(seq: number): DiffTab {
@@ -108,6 +131,90 @@ function normalizeDiffSlice(value: unknown): DiffSlice {
   };
 }
 
+export function makeDefaultTranslateSlice(): TranslateSlice {
+  return {
+    source: AUTO,
+    target: "en",
+    style: "general",
+    provider: "deepseek",
+    providers: {
+      deepseek: {
+        apiKey: "",
+        model: DEEPSEEK_MODELS[0],
+        endpointUrl: DEEPSEEK_ENDPOINT,
+      },
+      openai: {
+        apiKey: "",
+        model: DEFAULT_OPENAI_MODEL,
+        endpointUrl: OPENAI_ENDPOINT,
+      },
+      custom: { apiKey: "", model: "", endpointUrl: "" },
+    },
+  };
+}
+
+function isStyleId(value: unknown): value is StyleId {
+  return typeof value === "string" && (STYLE_IDS as readonly string[]).includes(value);
+}
+
+function isProviderId(value: unknown): value is ProviderId {
+  return value === "deepseek" || value === "openai" || value === "custom";
+}
+
+function isLanguageId(value: unknown): value is string {
+  return typeof value === "string" && LANGUAGES.some((language) => language.id === value);
+}
+
+function asString(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+/**
+ * Preset endpoints always reset to their fixed URLs; the DeepSeek model must
+ * be in its enum; a blank OpenAI model falls back to the default. Custom
+ * key/model/endpoint pass through as-is (a blank Custom model is preserved —
+ * it blocks sending with a setup hint instead).
+ */
+export function normalizeTranslateSlice(value: unknown): TranslateSlice {
+  const defaults = makeDefaultTranslateSlice();
+  if (!value || typeof value !== "object") return defaults;
+  const candidate = value as Partial<Omit<TranslateSlice, "providers">> & {
+    providers?: Partial<Record<ProviderId, Partial<ProviderConfig>>>;
+  };
+  const deepseek = candidate.providers?.deepseek ?? {};
+  const openai = candidate.providers?.openai ?? {};
+  const custom = candidate.providers?.custom ?? {};
+
+  return {
+    source: candidate.source === AUTO || isLanguageId(candidate.source) ? candidate.source : AUTO,
+    target: isLanguageId(candidate.target) ? candidate.target : defaults.target,
+    style: isStyleId(candidate.style) ? candidate.style : defaults.style,
+    provider: isProviderId(candidate.provider) ? candidate.provider : defaults.provider,
+    providers: {
+      deepseek: {
+        apiKey: asString(deepseek.apiKey, ""),
+        model: (DEEPSEEK_MODELS as readonly string[]).includes(deepseek.model as string)
+          ? (deepseek.model as string)
+          : DEEPSEEK_MODELS[0],
+        endpointUrl: DEEPSEEK_ENDPOINT,
+      },
+      openai: {
+        apiKey: asString(openai.apiKey, ""),
+        model:
+          typeof openai.model === "string" && openai.model.trim() !== ""
+            ? openai.model
+            : DEFAULT_OPENAI_MODEL,
+        endpointUrl: OPENAI_ENDPOINT,
+      },
+      custom: {
+        apiKey: asString(custom.apiKey, ""),
+        model: asString(custom.model, ""),
+        endpointUrl: asString(custom.endpointUrl, ""),
+      },
+    },
+  };
+}
+
 export interface AppState {
   activeToolId: string | null;
   favorites: string[];
@@ -118,8 +225,11 @@ export interface AppState {
   wrap: boolean;
   toolInputs: Record<string, string>;
   diff: DiffSlice;
+  translate: TranslateSlice;
   setActiveTool: (id: string) => void;
   toggleFavorite: (id: string) => void;
+  /** Move `sourceId` next to `targetId` within the favorites order. */
+  reorderFavorites: (sourceId: string, targetId: string, placeAfter: boolean) => void;
   setTheme: (theme: ThemeMode) => void;
   setLanguage: (language: LanguagePreference) => void;
   setHotkey: (hotkey: string) => void;
@@ -135,6 +245,10 @@ export interface AppState {
   renameDiffTab: (id: string, name: string) => void;
   setDiffMode: (mode: DiffMode) => void;
   setDiffView: (view: DiffView) => void;
+  setTranslateLanguages: (source: string, target: string) => void;
+  setTranslateStyle: (style: StyleId) => void;
+  setTranslateProvider: (provider: ProviderId) => void;
+  setTranslateProviderConfig: (id: ProviderId, patch: Partial<ProviderConfig>) => void;
   hydrate: (slice: HydrateSlice) => void;
 }
 
@@ -147,6 +261,7 @@ export const useAppStore = create<AppState>((set) => ({
   wrap: true,
   toolInputs: {},
   diff: makeDefaultDiffSlice(),
+  translate: makeDefaultTranslateSlice(),
   setActiveTool: (id) => set({ activeToolId: id }),
   toggleFavorite: (id) =>
     set((state) => ({
@@ -154,6 +269,16 @@ export const useAppStore = create<AppState>((set) => ({
         ? state.favorites.filter((favorite) => favorite !== id)
         : [...state.favorites, id],
     })),
+  reorderFavorites: (sourceId, targetId, placeAfter) =>
+    set((state) => {
+      const { favorites } = state;
+      if (sourceId === targetId) return {};
+      if (!favorites.includes(sourceId) || !favorites.includes(targetId)) return {};
+      const without = favorites.filter((id) => id !== sourceId);
+      const insertAt = without.indexOf(targetId) + (placeAfter ? 1 : 0);
+      const next = [...without.slice(0, insertAt), sourceId, ...without.slice(insertAt)];
+      return next.every((id, index) => id === favorites[index]) ? {} : { favorites: next };
+    }),
   setTheme: (theme) => set({ theme }),
   setLanguage: (language) => set({ language }),
   setHotkey: (hotkey) => set({ hotkey }),
@@ -254,11 +379,27 @@ export const useAppStore = create<AppState>((set) => ({
     }),
   setDiffMode: (mode) => set((state) => ({ diff: { ...state.diff, mode } })),
   setDiffView: (view) => set((state) => ({ diff: { ...state.diff, view } })),
+  setTranslateLanguages: (source, target) =>
+    set((state) => ({ translate: { ...state.translate, source, target } })),
+  setTranslateStyle: (style) => set((state) => ({ translate: { ...state.translate, style } })),
+  setTranslateProvider: (provider) =>
+    set((state) => ({ translate: { ...state.translate, provider } })),
+  setTranslateProviderConfig: (id, patch) =>
+    set((state) => ({
+      translate: {
+        ...state.translate,
+        providers: {
+          ...state.translate.providers,
+          [id]: { ...state.translate.providers[id], ...patch },
+        },
+      },
+    })),
   hydrate: (slice) => {
-    const { diff, ...rest } = slice;
+    const { diff, translate, ...rest } = slice;
     set({
       ...rest,
       ...(diff === undefined ? {} : { diff: normalizeDiffSlice(diff) }),
+      ...(translate === undefined ? {} : { translate: normalizeTranslateSlice(translate) }),
     });
   },
 }));

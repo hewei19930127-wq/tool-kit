@@ -6,6 +6,7 @@ import { jsonTool } from "@/tools/json";
 import { radixTool } from "@/tools/radix";
 import { regexTool } from "@/tools/regex";
 import { timeTool } from "@/tools/time";
+import { translateTool } from "@/tools/translate";
 import { urlTool } from "@/tools/url";
 import { xmlTool } from "@/tools/xml";
 import type { Tool } from "./types";
@@ -21,6 +22,7 @@ export const tools: Tool[] = [
   cronTool,
   regexTool,
   colorTool,
+  translateTool,
 ];
 
 export function getTool(id: string | null): Tool | undefined {

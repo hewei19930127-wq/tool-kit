@@ -37,7 +37,8 @@ function App() {
       storage().get<string>("hotkey"),
       storage().get<unknown>("diff"),
       storage().get<boolean>("wrap"),
-    ]).then(([favorites, theme, language, hotkey, diff, wrap]) => {
+      storage().get<unknown>("translate"),
+    ]).then(([favorites, theme, language, hotkey, diff, wrap, translate]) => {
       hydrate({
         ...(favorites ? { favorites } : {}),
         ...(theme ? { theme } : {}),
@@ -45,6 +46,7 @@ function App() {
         ...(hotkey ? { hotkey } : {}),
         ...(diff ? { diff } : {}),
         ...(typeof wrap === "boolean" ? { wrap } : {}),
+        ...(translate ? { translate } : {}),
       });
       if (hotkey) {
         void invoke("set_hotkey", { accelerator: hotkey }).catch(() => {});
@@ -61,6 +63,7 @@ function App() {
       if (state.hotkey !== prev.hotkey) void storage().set("hotkey", state.hotkey);
       if (state.diff !== prev.diff) void storage().set("diff", state.diff);
       if (state.wrap !== prev.wrap) void storage().set("wrap", state.wrap);
+      if (state.translate !== prev.translate) void storage().set("translate", state.translate);
     });
     return unsubscribe;
   }, []);

@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_LANGUAGE, makeDefaultDiffSlice, useAppStore } from "./store";
+import { DEEPSEEK_ENDPOINT, OPENAI_ENDPOINT } from "@/tools/translate/translate";
+import {
+  DEFAULT_LANGUAGE,
+  makeDefaultDiffSlice,
+  makeDefaultTranslateSlice,
+  normalizeTranslateSlice,
+  useAppStore,
+} from "./store";
 
 describe("app store", () => {
   beforeEach(() => {
@@ -25,6 +32,32 @@ describe("app store", () => {
     expect(useAppStore.getState().favorites).toEqual(["json"]);
     toggleFavorite("json");
     expect(useAppStore.getState().favorites).toEqual([]);
+  });
+
+  it("reorders favorites before or after a target", () => {
+    useAppStore.setState({ favorites: ["json", "base64", "url", "time"] });
+    const { reorderFavorites } = useAppStore.getState();
+
+    // Drop "time" before "base64".
+    reorderFavorites("time", "base64", false);
+    expect(useAppStore.getState().favorites).toEqual(["json", "time", "base64", "url"]);
+
+    // Drop "json" after "url" (reaching the end of the list).
+    reorderFavorites("json", "url", true);
+    expect(useAppStore.getState().favorites).toEqual(["time", "base64", "url", "json"]);
+  });
+
+  it("ignores no-op or invalid favorite reorders", () => {
+    useAppStore.setState({ favorites: ["json", "base64"] });
+    const initial = useAppStore.getState().favorites;
+    const { reorderFavorites } = useAppStore.getState();
+
+    reorderFavorites("json", "json", false); // same source and target
+    reorderFavorites("json", "base64", false); // already before "base64"
+    reorderFavorites("xml", "json", true); // source not pinned
+    reorderFavorites("json", "xml", true); // target not pinned
+
+    expect(useAppStore.getState().favorites).toBe(initial);
   });
 
   it("hydrates persisted slices", () => {
@@ -224,5 +257,86 @@ describe("app store", () => {
       mode: "word",
       view: "inline",
     });
+  });
+});
+
+describe("translate slice", () => {
+  beforeEach(() => {
+    useAppStore.setState({ translate: makeDefaultTranslateSlice() });
+  });
+
+  it("returns defaults for garbage persisted values", () => {
+    expect(normalizeTranslateSlice(null)).toEqual(makeDefaultTranslateSlice());
+    expect(normalizeTranslateSlice("nonsense")).toEqual(makeDefaultTranslateSlice());
+  });
+
+  it("falls back unknown language, style, and provider values", () => {
+    const slice = normalizeTranslateSlice({
+      source: "xx",
+      target: "auto",
+      style: "shakespeare",
+      provider: "bing",
+    });
+    expect(slice.source).toBe("auto");
+    expect(slice.target).toBe("en");
+    expect(slice.style).toBe("general");
+    expect(slice.provider).toBe("deepseek");
+  });
+
+  it("resets preset endpoints and invalid models while preserving keys", () => {
+    const slice = normalizeTranslateSlice({
+      providers: {
+        deepseek: {
+          apiKey: "k1",
+          model: "deepseek-v3",
+          endpointUrl: "https://evil.example.com",
+        },
+        openai: {
+          apiKey: "k2",
+          model: "",
+          endpointUrl: "http://other.example.com",
+        },
+        custom: {
+          apiKey: "",
+          model: "llama3.3",
+          endpointUrl: "http://localhost:11434/v1/chat/completions",
+        },
+      },
+    });
+    expect(slice.providers.deepseek).toEqual({
+      apiKey: "k1",
+      model: "deepseek-v4-flash",
+      endpointUrl: DEEPSEEK_ENDPOINT,
+    });
+    expect(slice.providers.openai).toEqual({
+      apiKey: "k2",
+      model: "gpt-5.2",
+      endpointUrl: OPENAI_ENDPOINT,
+    });
+    expect(slice.providers.custom).toEqual({
+      apiKey: "",
+      model: "llama3.3",
+      endpointUrl: "http://localhost:11434/v1/chat/completions",
+    });
+  });
+
+  it("hydrates the translate slice through the store", () => {
+    useAppStore.getState().hydrate({ translate: { target: "ja" } });
+    expect(useAppStore.getState().translate.target).toBe("ja");
+    expect(useAppStore.getState().translate.provider).toBe("deepseek");
+  });
+
+  it("updates languages, style, provider, and per-provider config", () => {
+    const state = useAppStore.getState();
+    state.setTranslateLanguages("en", "zh-Hans");
+    state.setTranslateStyle("polish");
+    state.setTranslateProvider("custom");
+    state.setTranslateProviderConfig("custom", { model: "llama3.3" });
+    const translate = useAppStore.getState().translate;
+    expect(translate.source).toBe("en");
+    expect(translate.target).toBe("zh-Hans");
+    expect(translate.style).toBe("polish");
+    expect(translate.provider).toBe("custom");
+    expect(translate.providers.custom.model).toBe("llama3.3");
   });
 });

@@ -1,14 +1,25 @@
-import { Hammer, Search, Settings as SettingsIcon, Star } from "lucide-react";
+import { GripVertical, Hammer, Search, Settings as SettingsIcon, Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/core/i18n";
 import { tools } from "@/core/registry";
 import { useAppStore } from "@/core/store";
+import type { Tool } from "@/core/types";
+
+type ReorderProps = {
+  isDragging: boolean;
+  indicator: "top" | "bottom" | null;
+  registerRef: (el: HTMLElement | null) => void;
+  onHandlePointerDown: (event: React.PointerEvent) => void;
+};
 
 function ToolRow({
   tool,
   onSelectTool,
+  reorder,
 }: {
-  tool: (typeof tools)[number];
+  tool: Tool;
   onSelectTool: (toolId: string) => void;
+  reorder?: ReorderProps;
 }) {
   const active = useAppStore((state) => state.activeToolId === tool.id);
   const favorite = useAppStore((state) => state.favorites.includes(tool.id));
@@ -20,14 +31,34 @@ function ToolRow({
 
   return (
     <div
-      className={`group relative grid grid-cols-[1fr_28px] items-center rounded-lg transition-colors ${
+      ref={reorder?.registerRef}
+      className={`group relative grid items-center rounded-lg transition-colors ${
+        reorder ? "grid-cols-[18px_1fr_28px]" : "grid-cols-[1fr_28px]"
+      } ${
         active
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
-      }`}
+      } ${reorder?.isDragging ? "opacity-40" : ""}`}
     >
+      {reorder?.indicator && (
+        <span
+          className={`pointer-events-none absolute inset-x-2 h-0.5 rounded-full bg-primary ${
+            reorder.indicator === "top" ? "-top-px" : "-bottom-px"
+          }`}
+        />
+      )}
       {active && (
         <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+      )}
+      {reorder && (
+        <button
+          type="button"
+          aria-label={t("app.sidebar.reorderTool", { tool: toolName })}
+          onPointerDown={reorder.onHandlePointerDown}
+          className="flex h-full cursor-grab touch-none items-center justify-center text-muted-foreground/40 outline-none transition-colors hover:text-muted-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary active:cursor-grabbing"
+        >
+          <GripVertical className="h-3.5 w-3.5" strokeWidth={1.75} />
+        </button>
       )}
       <button
         type="button"
@@ -67,8 +98,61 @@ export function Sidebar({
 }) {
   const { t } = useI18n();
   const favorites = useAppStore((state) => state.favorites);
-  const pinned = tools.filter((tool) => favorites.includes(tool.id));
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    id: string;
+    after: boolean;
+  } | null>(null);
+  // Live refs so the window pointer handlers read current values without re-binding.
+  const rowRefs = useRef(new Map<string, HTMLElement>());
+  const dropTargetRef = useRef<{ id: string; after: boolean } | null>(null);
+
+  // Favorites render in the user-curated order; the rest follow the registry order.
+  const pinned = favorites
+    .map((id) => tools.find((tool) => tool.id === id))
+    .filter((tool): tool is Tool => tool !== undefined);
   const rest = tools.filter((tool) => !favorites.includes(tool.id));
+
+  // HTML5 drag-and-drop is unreliable in the macOS WKWebView, so reordering is
+  // driven by pointer events: the window tracks the pointer while a handle is
+  // held and resolves the insertion point against each favorite row's box.
+  useEffect(() => {
+    if (draggingId === null) return;
+
+    const resolveTarget = (clientY: number) => {
+      let target: { id: string; after: boolean } | null = null;
+      for (const id of useAppStore.getState().favorites) {
+        const el = rowRefs.current.get(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (clientY < rect.top + rect.height / 2) return { id, after: false };
+        target = { id, after: true };
+      }
+      return target;
+    };
+
+    const onMove = (event: PointerEvent) => {
+      const target = resolveTarget(event.clientY);
+      dropTargetRef.current = target;
+      setDropTarget(target);
+    };
+    const onUp = () => {
+      const target = dropTargetRef.current;
+      if (target) useAppStore.getState().reorderFavorites(draggingId, target.id, target.after);
+      setDraggingId(null);
+      setDropTarget(null);
+      dropTargetRef.current = null;
+    };
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [draggingId]);
 
   return (
     <nav className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-sidebar">
@@ -98,14 +182,42 @@ export function Sidebar({
         </button>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-2">
+      <div
+        className={`flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-2 ${
+          draggingId ? "select-none" : ""
+        }`}
+      >
         {pinned.length > 0 && (
           <>
             <div className="px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80">
               {t("app.sidebar.favorites")}
             </div>
             {pinned.map((tool) => (
-              <ToolRow key={tool.id} tool={tool} onSelectTool={onSelectTool} />
+              <ToolRow
+                key={tool.id}
+                tool={tool}
+                onSelectTool={onSelectTool}
+                reorder={{
+                  isDragging: draggingId === tool.id,
+                  indicator:
+                    dropTarget?.id === tool.id && draggingId !== null && draggingId !== tool.id
+                      ? dropTarget.after
+                        ? "bottom"
+                        : "top"
+                      : null,
+                  registerRef: (el) => {
+                    if (el) rowRefs.current.set(tool.id, el);
+                    else rowRefs.current.delete(tool.id);
+                  },
+                  onHandlePointerDown: (event) => {
+                    if (event.button !== 0) return;
+                    event.preventDefault();
+                    dropTargetRef.current = null;
+                    setDropTarget(null);
+                    setDraggingId(tool.id);
+                  },
+                }}
+              />
             ))}
           </>
         )}

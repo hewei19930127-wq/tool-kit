@@ -2,7 +2,7 @@
 
 ## Project Context
 
-ToolKit is a native-feeling macOS desktop toolbox built with Tauri 2, React, TypeScript, Vite, Tailwind CSS v4, Zustand, Biome, and Vitest. It ships ten offline utilities (JSON, Base64, URL, Time, Diff, XML, Radix, Cron, Regex, Color). Most utility logic runs as pure TypeScript in the WebView; Rust stays thin for native shell features (tray, global shortcut, clipboard, eyedropper) plus a fast-path for large JSON/XML transforms. This file is the canonical contributor and architecture guide; `CLAUDE.md` and any other agent entry points point here and add only assistant-specific notes — they should never restate or diverge from these rules.
+ToolKit is a native-feeling macOS desktop toolbox built with Tauri 2, React, TypeScript, Vite, Tailwind CSS v4, Zustand, Biome, and Vitest. It ships eleven utilities (JSON, Base64, URL, Time, Diff, XML, Radix, Cron, Regex, Color, Translate); all but Translate work fully offline — Translate streams from a user-configured LLM provider. Most utility logic runs as pure TypeScript in the WebView; Rust stays thin for native shell features (tray, global shortcut, clipboard, eyedropper) plus a fast-path for large JSON/XML transforms. This file is the canonical contributor and architecture guide; `CLAUDE.md` and any other agent entry points point here and add only assistant-specific notes — they should never restate or diverge from these rules.
 
 ## Project Structure & Module Organization
 
@@ -58,4 +58,4 @@ Git history uses Conventional Commit-style messages such as `feat: implement Too
 
 ## Security & Configuration Tips
 
-The app is intended to work offline — avoid network calls or heavy dependencies without a clear reason. Tools must use shared hooks for input/history and never touch persistence directly. For the native boundary (module responsibilities, registering app commands, capabilities), see Architecture above.
+The app is intended to work offline — avoid network calls or heavy dependencies without a clear reason. **Documented exception:** the Translate tool calls the user-configured LLM provider endpoint, and nothing else may make network calls. The Tauri http capability is necessarily broad (`https://**` plus loopback HTTP — Custom endpoints rule out a narrower static scope); the "only the user-configured endpoint" guarantee is enforced by app-level code (`validateEndpointUrl` in `src/tools/translate/translate.ts`), not by the capability. API keys live in plaintext in `toolkit.json`; never log them or include them in errors, history entries, or tests. Tools must use shared hooks for input/history and never touch persistence directly. For the native boundary (module responsibilities, registering app commands, capabilities), see Architecture above.
