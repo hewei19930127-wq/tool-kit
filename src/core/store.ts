@@ -16,6 +16,7 @@ import {
 
 export type ThemeMode = "system" | "light" | "dark";
 export type DiffView = "inline" | "split";
+export type TextTabToolId = "json" | "xml";
 
 export const DEFAULT_HOTKEY = "Alt+Space";
 export const DEFAULT_LANGUAGE: LanguagePreference = "system";
@@ -37,6 +38,22 @@ export interface DiffSlice {
   view: DiffView;
 }
 
+export interface TextTab {
+  id: string;
+  seq: number;
+  input: string;
+  /** User-customized tab name; falls back to the seq-based label when empty. */
+  name?: string;
+}
+
+export interface TextTabsSlice {
+  tabs: TextTab[];
+  activeTabId: string;
+  nextSeq: number;
+}
+
+export type TextTabsState = Record<TextTabToolId, TextTabsSlice>;
+
 export interface TranslateSlice {
   /** Language id or AUTO. */
   source: string;
@@ -51,6 +68,7 @@ type HydrateSlice = Partial<
   Pick<AppState, "favorites" | "theme" | "language" | "activeToolId" | "hotkey" | "wrap">
 > & {
   diff?: unknown;
+  textTabs?: unknown;
   translate?: unknown;
 };
 
@@ -128,6 +146,81 @@ function normalizeDiffSlice(value: unknown): DiffSlice {
     nextSeq,
     mode: isDiffMode(candidate.mode) ? candidate.mode : "line",
     view: isDiffView(candidate.view) ? candidate.view : "split",
+  };
+}
+
+function makeBlankTextTab(seq: number): TextTab {
+  return { id: crypto.randomUUID(), seq, input: "" };
+}
+
+export function makeDefaultTextTabsSlice(): TextTabsSlice {
+  const tab = makeBlankTextTab(1);
+  return {
+    tabs: [tab],
+    activeTabId: tab.id,
+    nextSeq: 2,
+  };
+}
+
+export function makeDefaultTextTabsState(): TextTabsState {
+  return {
+    json: makeDefaultTextTabsSlice(),
+    xml: makeDefaultTextTabsSlice(),
+  };
+}
+
+function isTextTab(value: unknown): value is TextTab {
+  if (!value || typeof value !== "object") return false;
+  const tab = value as Partial<TextTab>;
+  return (
+    typeof tab.id === "string" &&
+    typeof tab.seq === "number" &&
+    typeof tab.input === "string" &&
+    (tab.name === undefined || typeof tab.name === "string")
+  );
+}
+
+function nextSeqFromTextTabs(tabs: TextTab[]): number {
+  return tabs.reduce((largest, tab) => Math.max(largest, tab.seq), 0) + 1;
+}
+
+function resetTextNumberingWhenSingle(slice: TextTabsSlice): TextTabsSlice {
+  if (slice.tabs.length !== 1) return slice;
+  const only = { ...slice.tabs[0], seq: 1 };
+  return { ...slice, tabs: [only], activeTabId: only.id, nextSeq: 2 };
+}
+
+function normalizeTextTabsSlice(value: unknown): TextTabsSlice {
+  if (!value || typeof value !== "object") return makeDefaultTextTabsSlice();
+
+  const candidate = value as Partial<TextTabsSlice>;
+  const tabs = Array.isArray(candidate.tabs) ? candidate.tabs.filter(isTextTab) : [];
+  if (tabs.length === 0) return makeDefaultTextTabsSlice();
+
+  const activeTabId =
+    typeof candidate.activeTabId === "string" &&
+    tabs.some((tab) => tab.id === candidate.activeTabId)
+      ? candidate.activeTabId
+      : tabs[0].id;
+  const minimumNextSeq = nextSeqFromTextTabs(tabs);
+  const nextSeq =
+    typeof candidate.nextSeq === "number" && Number.isFinite(candidate.nextSeq)
+      ? Math.max(Math.floor(candidate.nextSeq), minimumNextSeq)
+      : minimumNextSeq;
+
+  return {
+    tabs,
+    activeTabId,
+    nextSeq,
+  };
+}
+
+function normalizeTextTabsState(value: unknown): TextTabsState {
+  if (!value || typeof value !== "object") return makeDefaultTextTabsState();
+  const candidate = value as Partial<Record<TextTabToolId, unknown>>;
+  return {
+    json: normalizeTextTabsSlice(candidate.json),
+    xml: normalizeTextTabsSlice(candidate.xml),
   };
 }
 
@@ -225,6 +318,7 @@ export interface AppState {
   wrap: boolean;
   toolInputs: Record<string, string>;
   diff: DiffSlice;
+  textTabs: TextTabsState;
   translate: TranslateSlice;
   setActiveTool: (id: string) => void;
   toggleFavorite: (id: string) => void;
@@ -235,6 +329,14 @@ export interface AppState {
   setHotkey: (hotkey: string) => void;
   setWrap: (wrap: boolean) => void;
   setToolInput: (id: string, text: string) => void;
+  addTextTab: (toolId: TextTabToolId) => void;
+  closeTextTab: (toolId: TextTabToolId, id: string) => void;
+  closeOtherTextTabs: (toolId: TextTabToolId, id: string) => void;
+  closeTextTabsToRight: (toolId: TextTabToolId, id: string) => void;
+  closeAllTextTabs: (toolId: TextTabToolId) => void;
+  setActiveTextTab: (toolId: TextTabToolId, id: string) => void;
+  setTextTabInput: (toolId: TextTabToolId, id: string, text: string) => void;
+  renameTextTab: (toolId: TextTabToolId, id: string, name: string) => void;
   addDiffTab: () => void;
   closeDiffTab: (id: string) => void;
   closeOtherDiffTabs: (id: string) => void;
@@ -261,6 +363,7 @@ export const useAppStore = create<AppState>((set) => ({
   wrap: true,
   toolInputs: {},
   diff: makeDefaultDiffSlice(),
+  textTabs: makeDefaultTextTabsState(),
   translate: makeDefaultTranslateSlice(),
   setActiveTool: (id) => set({ activeToolId: id }),
   toggleFavorite: (id) =>
@@ -284,6 +387,127 @@ export const useAppStore = create<AppState>((set) => ({
   setHotkey: (hotkey) => set({ hotkey }),
   setWrap: (wrap) => set({ wrap }),
   setToolInput: (id, text) => set((state) => ({ toolInputs: { ...state.toolInputs, [id]: text } })),
+  addTextTab: (toolId) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      const tab = makeBlankTextTab(slice.nextSeq);
+      return {
+        textTabs: {
+          ...state.textTabs,
+          [toolId]: {
+            ...slice,
+            tabs: [...slice.tabs, tab],
+            activeTabId: tab.id,
+            nextSeq: slice.nextSeq + 1,
+          },
+        },
+      };
+    }),
+  closeTextTab: (toolId, id) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      const closingIndex = slice.tabs.findIndex((tab) => tab.id === id);
+      if (slice.tabs.length === 1 || closingIndex === -1) return {};
+
+      const tabs = slice.tabs.filter((tab) => tab.id !== id);
+      const activeTabId =
+        slice.activeTabId === id ? tabs[Math.max(0, closingIndex - 1)].id : slice.activeTabId;
+
+      return {
+        textTabs: {
+          ...state.textTabs,
+          [toolId]: resetTextNumberingWhenSingle({ ...slice, tabs, activeTabId }),
+        },
+      };
+    }),
+  closeOtherTextTabs: (toolId, id) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      const kept = slice.tabs.find((tab) => tab.id === id);
+      if (!kept || slice.tabs.length === 1) return {};
+      return {
+        textTabs: {
+          ...state.textTabs,
+          [toolId]: resetTextNumberingWhenSingle({
+            ...slice,
+            tabs: [kept],
+            activeTabId: kept.id,
+          }),
+        },
+      };
+    }),
+  closeTextTabsToRight: (toolId, id) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      const index = slice.tabs.findIndex((tab) => tab.id === id);
+      if (index === -1 || index === slice.tabs.length - 1) return {};
+      const tabs = slice.tabs.slice(0, index + 1);
+      const activeTabId = tabs.some((tab) => tab.id === slice.activeTabId) ? slice.activeTabId : id;
+      return {
+        textTabs: {
+          ...state.textTabs,
+          [toolId]: resetTextNumberingWhenSingle({ ...slice, tabs, activeTabId }),
+        },
+      };
+    }),
+  closeAllTextTabs: (toolId) =>
+    set((state) => {
+      const tab = makeBlankTextTab(1);
+      return {
+        textTabs: {
+          ...state.textTabs,
+          [toolId]: {
+            tabs: [tab],
+            activeTabId: tab.id,
+            nextSeq: 2,
+          },
+        },
+      };
+    }),
+  setActiveTextTab: (toolId, id) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      return slice.tabs.some((tab) => tab.id === id)
+        ? {
+            textTabs: {
+              ...state.textTabs,
+              [toolId]: { ...slice, activeTabId: id },
+            },
+          }
+        : {};
+    }),
+  setTextTabInput: (toolId, id, text) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      return slice.tabs.some((tab) => tab.id === id)
+        ? {
+            textTabs: {
+              ...state.textTabs,
+              [toolId]: {
+                ...slice,
+                tabs: slice.tabs.map((tab) => (tab.id === id ? { ...tab, input: text } : tab)),
+              },
+            },
+          }
+        : {};
+    }),
+  renameTextTab: (toolId, id, name) =>
+    set((state) => {
+      const slice = state.textTabs[toolId];
+      if (!slice.tabs.some((tab) => tab.id === id)) return {};
+      const trimmed = name.trim();
+      return {
+        textTabs: {
+          ...state.textTabs,
+          [toolId]: {
+            ...slice,
+            tabs: slice.tabs.map((tab) =>
+              tab.id === id ? { ...tab, name: trimmed === "" ? undefined : trimmed } : tab,
+            ),
+          },
+        },
+      };
+    }),
   addDiffTab: () =>
     set((state) => {
       const tab = makeBlankTab(state.diff.nextSeq);
@@ -395,10 +619,11 @@ export const useAppStore = create<AppState>((set) => ({
       },
     })),
   hydrate: (slice) => {
-    const { diff, translate, ...rest } = slice;
+    const { diff, textTabs, translate, ...rest } = slice;
     set({
       ...rest,
       ...(diff === undefined ? {} : { diff: normalizeDiffSlice(diff) }),
+      ...(textTabs === undefined ? {} : { textTabs: normalizeTextTabsState(textTabs) }),
       ...(translate === undefined ? {} : { translate: normalizeTranslateSlice(translate) }),
     });
   },

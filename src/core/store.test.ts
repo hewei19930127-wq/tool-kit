@@ -3,6 +3,7 @@ import { DEEPSEEK_ENDPOINT, OPENAI_ENDPOINT } from "@/tools/translate/translate"
 import {
   DEFAULT_LANGUAGE,
   makeDefaultDiffSlice,
+  makeDefaultTextTabsState,
   makeDefaultTranslateSlice,
   normalizeTranslateSlice,
   useAppStore,
@@ -18,6 +19,7 @@ describe("app store", () => {
       hotkey: "Alt+Space",
       toolInputs: {},
       diff: makeDefaultDiffSlice(),
+      textTabs: makeDefaultTextTabsState(),
     });
   });
 
@@ -92,6 +94,82 @@ describe("app store", () => {
     });
     setToolInput("json", "[]");
     expect(useAppStore.getState().toolInputs.json).toBe("[]");
+  });
+
+  it("adds a text tab and activates it", () => {
+    const firstTab = useAppStore.getState().textTabs.json.tabs[0];
+    useAppStore.getState().addTextTab("json");
+
+    const { activeTabId, nextSeq, tabs } = useAppStore.getState().textTabs.json;
+    expect(tabs).toHaveLength(2);
+    expect(tabs[0]).toBe(firstTab);
+    expect(tabs[1]).toMatchObject({ seq: 2, input: "" });
+    expect(activeTabId).toBe(tabs[1].id);
+    expect(nextSeq).toBe(3);
+  });
+
+  it("updates only the requested text tab and tool", () => {
+    const { addTextTab, setTextTabInput } = useAppStore.getState();
+    addTextTab("json");
+    addTextTab("xml");
+    const jsonTab = useAppStore.getState().textTabs.json.tabs[1];
+    const xmlBefore = useAppStore.getState().textTabs.xml;
+
+    setTextTabInput("json", jsonTab.id, '{"a":1}');
+
+    expect(useAppStore.getState().textTabs.json.tabs[1]).toEqual({
+      ...jsonTab,
+      input: '{"a":1}',
+    });
+    expect(useAppStore.getState().textTabs.xml).toBe(xmlBefore);
+  });
+
+  it("closes text tabs and restarts numbering when one remains", () => {
+    const { addTextTab, closeTextTab } = useAppStore.getState();
+    addTextTab("xml");
+    const [firstTab, secondTab] = useAppStore.getState().textTabs.xml.tabs;
+
+    closeTextTab("xml", firstTab.id);
+
+    const { tabs, activeTabId, nextSeq } = useAppStore.getState().textTabs.xml;
+    expect(tabs).toHaveLength(1);
+    expect(tabs[0].id).toBe(secondTab.id);
+    expect(tabs[0].seq).toBe(1);
+    expect(activeTabId).toBe(secondTab.id);
+    expect(nextSeq).toBe(2);
+
+    closeTextTab("xml", secondTab.id);
+    expect(useAppStore.getState().textTabs.xml.tabs).toHaveLength(1);
+  });
+
+  it("renames text tabs and clears the name when blank", () => {
+    const { renameTextTab } = useAppStore.getState();
+    const tab = useAppStore.getState().textTabs.json.tabs[0];
+
+    renameTextTab("json", tab.id, "  Payload  ");
+    expect(useAppStore.getState().textTabs.json.tabs[0].name).toBe("Payload");
+
+    renameTextTab("json", tab.id, " ");
+    expect(useAppStore.getState().textTabs.json.tabs[0].name).toBeUndefined();
+  });
+
+  it("repairs stale text tabs during hydration", () => {
+    useAppStore.getState().hydrate({
+      textTabs: {
+        json: {
+          tabs: [{ id: "json-one", seq: 1, input: "{}" }],
+          activeTabId: "missing",
+          nextSeq: 1,
+        },
+      },
+    });
+
+    expect(useAppStore.getState().textTabs.json).toEqual({
+      tabs: [{ id: "json-one", seq: 1, input: "{}" }],
+      activeTabId: "json-one",
+      nextSeq: 2,
+    });
+    expect(useAppStore.getState().textTabs.xml.tabs).toHaveLength(1);
   });
 
   it("adds a diff tab and activates it", () => {

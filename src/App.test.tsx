@@ -7,6 +7,8 @@ import {
   DEFAULT_LANGUAGE,
   type DiffSlice,
   makeDefaultDiffSlice,
+  makeDefaultTextTabsState,
+  type TextTabsState,
   useAppStore,
 } from "@/core/store";
 
@@ -51,6 +53,7 @@ describe("App", () => {
       hotkey: DEFAULT_HOTKEY,
       toolInputs: {},
       diff: makeDefaultDiffSlice(),
+      textTabs: makeDefaultTextTabsState(),
     });
   });
 
@@ -107,6 +110,48 @@ describe("App", () => {
       expect(backend.values.get("diff")).toEqual({
         ...persistedDiff,
         view: "split",
+      }),
+    );
+  });
+
+  it("hydrates and persists JSON/XML tab state", async () => {
+    const persistedTextTabs: TextTabsState = {
+      json: {
+        tabs: [
+          { id: "json-one", seq: 1, input: "{}" },
+          { id: "json-two", seq: 2, input: '{"a":1}' },
+        ],
+        activeTabId: "json-two",
+        nextSeq: 3,
+      },
+      xml: {
+        tabs: [{ id: "xml-one", seq: 1, input: "<a/>" }],
+        activeTabId: "xml-one",
+        nextSeq: 2,
+      },
+    };
+    const backend = memoryBackend({ textTabs: persistedTextTabs });
+    setStorageBackend(backend);
+
+    render(<App />);
+
+    await screen.findByText("ToolKit");
+    expect(useAppStore.getState().textTabs).toEqual(persistedTextTabs);
+
+    act(() => {
+      useAppStore.getState().setTextTabInput("json", "json-two", '{"b":2}');
+    });
+
+    await waitFor(() =>
+      expect(backend.values.get("textTabs")).toEqual({
+        ...persistedTextTabs,
+        json: {
+          ...persistedTextTabs.json,
+          tabs: [
+            persistedTextTabs.json.tabs[0],
+            { ...persistedTextTabs.json.tabs[1], input: '{"b":2}' },
+          ],
+        },
       }),
     );
   });

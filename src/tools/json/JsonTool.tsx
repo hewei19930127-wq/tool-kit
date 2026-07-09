@@ -6,12 +6,12 @@ import { SearchBar } from "@/components/SearchBar";
 import { WrapToggle } from "@/components/WrapToggle";
 import { useHistory } from "@/core/hooks/useHistory";
 import { useOutputSearch } from "@/core/hooks/useOutputSearch";
-import { useToolInput } from "@/core/hooks/useToolInput";
 import { useTransform } from "@/core/hooks/useTransform";
 import { type I18nKey, useI18n } from "@/core/i18n";
 import { resultValue } from "@/core/i18n/result";
 import { useAppStore } from "@/core/store";
 import type { ToolResult } from "@/core/types";
+import { TextTabs } from "@/tools/shared/TextTabs";
 import { escapeJson, unescapeJson, validateJson } from "./json";
 
 type Action =
@@ -29,22 +29,35 @@ const ACTIONS: Action[] = [
 
 export default function JsonTool() {
   const { t } = useI18n();
-  const [input, setInput] = useToolInput("json");
-  const [result, setResult] = useState<ToolResult | null>(null);
+  const active = useAppStore((state) => {
+    const slice = state.textTabs.json;
+    return (
+      slice.tabs.find((tab) => tab.id === slice.activeTabId) ??
+      slice.tabs[0] ?? { id: "json-fallback", seq: 1, input: "" }
+    );
+  });
+  const setTextTabInput = useAppStore((state) => state.setTextTabInput);
+  const [results, setResults] = useState<Record<string, ToolResult | null>>({});
+  const result = results[active.id] ?? null;
   const { entries, record } = useHistory("json");
   const { run, pending } = useTransform();
   const copyText = result?.ok ? resultValue(result, t) : "";
   const search = useOutputSearch(copyText);
   const wrap = useAppStore((state) => state.wrap);
+  const setInput = (text: string) => setTextTabInput("json", active.id, text);
 
   async function apply(action: Action) {
+    const tabId = active.id;
+    const input = active.input;
     const next = "op" in action ? await run(action.op, input) : action.run(input);
-    setResult(next);
+    setResults((current) => ({ ...current, [tabId]: next }));
     if (next.ok) record(input, next.value);
   }
 
   return (
     <div className="flex h-full flex-col gap-3 p-4">
+      <TextTabs toolId="json" />
+
       <div className="flex flex-wrap items-center gap-2">
         {ACTIONS.map((action) => (
           <button
@@ -70,7 +83,7 @@ export default function JsonTool() {
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 md:grid-cols-2">
         <textarea
           aria-label={t("tools.json.input")}
-          value={input}
+          value={active.input}
           onChange={(event) => setInput(event.target.value)}
           placeholder={t("tools.json.placeholder")}
           className="h-full min-h-64 resize-none rounded-lg border border-border bg-surface p-3 font-mono text-sm leading-5 outline-none focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20"

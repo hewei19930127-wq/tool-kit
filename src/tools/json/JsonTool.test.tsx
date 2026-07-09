@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { type KV, setStorageBackend } from "@/core/services/storage";
-import { useAppStore } from "@/core/store";
+import { makeDefaultTextTabsState, useAppStore } from "@/core/store";
 import JsonTool from "./JsonTool";
 
 function memoryBackend(): KV {
@@ -19,7 +19,7 @@ function memoryBackend(): KV {
 describe("JsonTool", () => {
   beforeEach(() => {
     setStorageBackend(memoryBackend());
-    useAppStore.setState({ toolInputs: {}, wrap: true });
+    useAppStore.setState({ toolInputs: {}, textTabs: makeDefaultTextTabsState(), wrap: true });
   });
 
   it("formats input on Format", async () => {
@@ -28,6 +28,33 @@ describe("JsonTool", () => {
     fireEvent.change(input, { target: { value: '{"b":1,"a":2}' } });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
     expect((await screen.findByLabelText("Output")).textContent).toContain('"b": 1');
+  });
+
+  it("keeps independent input and output between JSON tabs", async () => {
+    render(<JsonTool />);
+    const input = screen.getByLabelText("JSON input") as HTMLTextAreaElement;
+
+    fireEvent.change(input, { target: { value: '{"first":1}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    expect((await screen.findByLabelText("Output")).textContent).toContain('"first": 1');
+
+    fireEvent.click(screen.getByLabelText("New JSON tab"));
+    expect(screen.getByLabelText("JSON input")).toHaveValue("");
+    expect(
+      screen.getByText("Output appears here. Paste JSON and pick an action."),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("JSON input"), { target: { value: '{"second":2}' } });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    expect((await screen.findByLabelText("Output")).textContent).toContain('"second": 2');
+
+    fireEvent.click(screen.getByRole("tab", { name: "JSON 1" }));
+    expect(screen.getByLabelText("JSON input")).toHaveValue('{"first":1}');
+    expect(screen.getByLabelText("Output").textContent).toContain('"first": 1');
+
+    fireEvent.click(screen.getByRole("tab", { name: "JSON 2" }));
+    expect(screen.getByLabelText("JSON input")).toHaveValue('{"second":2}');
+    expect(screen.getByLabelText("Output").textContent).toContain('"second": 2');
   });
 
   it("shows an error state for invalid JSON", async () => {

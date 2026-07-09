@@ -11,13 +11,18 @@ import { useClipboardDetect } from "@/core/hooks/useClipboardDetect";
 import type { LanguagePreference } from "@/core/i18n";
 import { getTool } from "@/core/registry";
 import { storage } from "@/core/services/storage";
-import { type ThemeMode, useAppStore } from "@/core/store";
+import { type TextTabToolId, type ThemeMode, useAppStore } from "@/core/store";
+
+function isTextTabToolId(toolId: string): toolId is TextTabToolId {
+  return toolId === "json" || toolId === "xml";
+}
 
 function App() {
   const hydrate = useAppStore((state) => state.hydrate);
   const activeToolId = useAppStore((state) => state.activeToolId);
   const setActiveTool = useAppStore((state) => state.setActiveTool);
   const setToolInput = useAppStore((state) => state.setToolInput);
+  const setTextTabInput = useAppStore((state) => state.setTextTabInput);
   const [ready, setReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -29,6 +34,15 @@ function App() {
     setSettingsOpen(false);
   };
 
+  const fillToolInput = (toolId: string, text: string) => {
+    if (isTextTabToolId(toolId)) {
+      const { activeTabId } = useAppStore.getState().textTabs[toolId];
+      setTextTabInput(toolId, activeTabId, text);
+      return;
+    }
+    setToolInput(toolId, text);
+  };
+
   useEffect(() => {
     Promise.all([
       storage().get<string[]>("favorites"),
@@ -36,15 +50,17 @@ function App() {
       storage().get<LanguagePreference>("language"),
       storage().get<string>("hotkey"),
       storage().get<unknown>("diff"),
+      storage().get<unknown>("textTabs"),
       storage().get<boolean>("wrap"),
       storage().get<unknown>("translate"),
-    ]).then(([favorites, theme, language, hotkey, diff, wrap, translate]) => {
+    ]).then(([favorites, theme, language, hotkey, diff, textTabs, wrap, translate]) => {
       hydrate({
         ...(favorites ? { favorites } : {}),
         ...(theme ? { theme } : {}),
         ...(language ? { language } : {}),
         ...(hotkey ? { hotkey } : {}),
         ...(diff ? { diff } : {}),
+        ...(textTabs ? { textTabs } : {}),
         ...(typeof wrap === "boolean" ? { wrap } : {}),
         ...(translate ? { translate } : {}),
       });
@@ -62,6 +78,7 @@ function App() {
       if (state.language !== prev.language) void storage().set("language", state.language);
       if (state.hotkey !== prev.hotkey) void storage().set("hotkey", state.hotkey);
       if (state.diff !== prev.diff) void storage().set("diff", state.diff);
+      if (state.textTabs !== prev.textTabs) void storage().set("textTabs", state.textTabs);
       if (state.wrap !== prev.wrap) void storage().set("wrap", state.wrap);
       if (state.translate !== prev.translate) void storage().set("translate", state.translate);
     });
@@ -101,13 +118,13 @@ function App() {
                 text={clipText}
                 suggestionNameKey={suggestedTool?.nameKey}
                 onFill={(text) => {
-                  if (activeToolId) setToolInput(activeToolId, text);
+                  if (activeToolId) fillToolInput(activeToolId, text);
                   clearClip();
                 }}
                 onOpenSuggestion={() => {
                   if (suggestedToolId) {
                     selectTool(suggestedToolId);
-                    setToolInput(suggestedToolId, clipText);
+                    fillToolInput(suggestedToolId, clipText);
                   }
                   clearClip();
                 }}

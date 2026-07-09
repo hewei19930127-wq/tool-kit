@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { type KV, setStorageBackend } from "@/core/services/storage";
-import { useAppStore } from "@/core/store";
+import { makeDefaultTextTabsState, useAppStore } from "@/core/store";
 import XmlTool from "./XmlTool";
 
 function memoryBackend(): KV {
@@ -19,7 +19,7 @@ function memoryBackend(): KV {
 describe("XmlTool", () => {
   beforeEach(() => {
     setStorageBackend(memoryBackend());
-    useAppStore.setState({ toolInputs: {} });
+    useAppStore.setState({ toolInputs: {}, textTabs: makeDefaultTextTabsState() });
   });
 
   it("formats valid XML", async () => {
@@ -29,6 +29,36 @@ describe("XmlTool", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Format" }));
     expect((await screen.findByLabelText("Output")).textContent).toContain("<b>1</b>");
+  });
+
+  it("keeps independent input and output between XML tabs", async () => {
+    render(<XmlTool />);
+
+    fireEvent.change(screen.getByLabelText("XML input"), {
+      target: { value: "<first><a>1</a></first>" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    expect((await screen.findByLabelText("Output")).textContent).toContain("<first>");
+
+    fireEvent.click(screen.getByLabelText("New XML tab"));
+    expect(screen.getByLabelText("XML input")).toHaveValue("");
+    expect(
+      screen.getByText("Output appears here. Paste XML and pick an action."),
+    ).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("XML input"), {
+      target: { value: "<second><b>2</b></second>" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Format" }));
+    expect((await screen.findByLabelText("Output")).textContent).toContain("<second>");
+
+    fireEvent.click(screen.getByRole("tab", { name: "XML 1" }));
+    expect(screen.getByLabelText("XML input")).toHaveValue("<first><a>1</a></first>");
+    expect(screen.getByLabelText("Output").textContent).toContain("<first>");
+
+    fireEvent.click(screen.getByRole("tab", { name: "XML 2" }));
+    expect(screen.getByLabelText("XML input")).toHaveValue("<second><b>2</b></second>");
+    expect(screen.getByLabelText("Output").textContent).toContain("<second>");
   });
 
   it("highlights output matches with Cmd+F", async () => {
